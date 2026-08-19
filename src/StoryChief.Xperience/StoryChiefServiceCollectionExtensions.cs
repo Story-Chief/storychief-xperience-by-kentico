@@ -40,6 +40,18 @@ public static class StoryChiefServiceCollectionExtensions
 
     private static IServiceCollection AddStoryChiefPublisher(IServiceCollection services)
     {
+        services.TryAddSingleton<StoryChief.Xperience.IStoryChiefRemoteImageUrlValidator,
+            StoryChief.Xperience.StoryChiefRemoteImageUrlValidator>();
+        services.AddHttpClient<StoryChief.Xperience.StoryChiefCoverImageDownloader>(client =>
+            {
+                client.Timeout = TimeSpan.FromSeconds(30);
+                client.DefaultRequestHeaders.UserAgent.ParseAdd("StoryChief.Xperience/1.0");
+            })
+            .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+            {
+                AllowAutoRedirect = false,
+            });
+        services.TryAddScoped<StoryChief.Xperience.StoryChiefCoverImageManager>();
         services.TryAddScoped<StoryChief.Xperience.IStoryChiefContentPublisher,
             StoryChief.Xperience.KenticoStoryChiefContentPublisher>();
 

@@ -25,6 +25,12 @@ builder.Services.AddStoryChiefXperience(options =>
     options.Page.MapField("seo_title", "ArticleSeoTitle");
     options.Page.MapField("seo_description", "ArticleSeoDescription");
     options.Page.MapField("published_at", "ArticlePublishedAt", StoryChiefFieldValueKind.DateTime);
+
+    options.Page.CoverImage.ContentTypeName = "Acme.Image";
+    options.Page.CoverImage.AssetFieldName = "ImageFile";
+    options.Page.CoverImage.PageFieldName = "ArticleCoverImage";
+    options.Page.CoverImage.AltTextFieldName = "ImageAltText";
+    options.Page.CoverImage.WorkspaceName = "Acme.Content";
 });
 
 var app = builder.Build();
@@ -61,6 +67,14 @@ builder.Services.AddStoryChiefXperience(
         "nl": "nl-BE"
       },
       "AuditUserName": "storychief-integration",
+      "CoverImage": {
+        "ContentTypeName": "Acme.Image",
+        "AssetFieldName": "ImageFile",
+        "PageFieldName": "ArticleCoverImage",
+        "AltTextFieldName": "ImageAltText",
+        "WorkspaceName": "Acme.Content",
+        "MaxFileSizeBytes": 10485760
+      },
       "FieldMappings": {
         "title": {
           "XperienceFieldName": "ArticleTitle",
@@ -127,11 +141,34 @@ Nested property paths such as `custom_fields.reading_time` are supported. Missin
 
 The destination Xperience fields must accept the resulting .NET values. Field validation remains controlled by the configured Xperience content type.
 
+## Publish cover images
+
+Cover-image support uses Xperience [content item assets](https://docs.kentico.com/documentation/business-users/content-hub/content-item-assets), not obsolete media libraries. Prepare the content model with:
+
+1. A reusable image content type with a `Content item asset` field.
+2. An optional text field on that image type for alternative text.
+3. A `Content items` field on the target page type that allows the reusable image type and accepts one item.
+
+Configure the corresponding code names:
+
+```csharp
+options.Page.CoverImage.ContentTypeName = "Acme.Image";
+options.Page.CoverImage.AssetFieldName = "ImageFile";
+options.Page.CoverImage.PageFieldName = "ArticleCoverImage";
+options.Page.CoverImage.AltTextFieldName = "ImageAltText";
+options.Page.CoverImage.WorkspaceName = "Acme.Content";
+options.Page.CoverImage.MaxFileSizeBytes = 10 * 1024 * 1024;
+```
+
+Leave all cover-image code names empty to disable the feature. `WorkspaceName` must identify a Content hub workspace in which the reusable image type is available. Setting only some required values is treated as a configuration error.
+
+For each StoryChief story and language, the integration creates one deterministically named reusable image item. Publishing and updates reuse that item, replace its binary and alternative text, and link it from the language-specific page variant. A published update with an empty `featured_image` removes the page link and permanently deletes the integration-owned image item. Deleting the page variant also deletes its managed image item. Status-only updates made with `lock_updates` do not change the cover image.
+
+Remote downloads must use HTTPS, resolve to public network addresses, return an `image/*` content type, and stay within `MaxFileSizeBytes`. Redirect targets receive the same validation.
+
 ## Advanced project-specific mapping
 
-Direct mapping intentionally does not create Xperience assets, taxonomy tags, author content items, or other linked content. Projects that need those features can replace the default publisher with an `IStoryChiefContentPublisher` implementation:
-
-For future asset mapping, use [reusable content item assets in Content hub](https://docs.kentico.com/documentation/business-users/content-hub/content-item-assets). Do not build new integrations on Kentico's [obsolete media-library APIs](https://docs.kentico.com/documentation/business-users/media-libraries).
+Direct mapping intentionally does not create taxonomy tags, author content items, or arbitrary linked content. Projects that need those features can replace the default publisher with an `IStoryChiefContentPublisher` implementation:
 
 ```csharp
 public sealed class ArticlePublisher : IStoryChiefContentPublisher
@@ -141,7 +178,7 @@ public sealed class ArticlePublisher : IStoryChiefContentPublisher
         StoryChiefPublishingContext context,
         CancellationToken cancellationToken)
     {
-        // Map title, content, excerpt, SEO fields, taxonomy, author, and media
+        // Map title, content, excerpt, SEO fields, taxonomy, author, and project-specific content
         // to the project's generated Xperience content-type model.
         throw new NotImplementedException();
     }

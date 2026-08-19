@@ -139,6 +139,13 @@ internal static class StoryChiefWebhookEndpoint
                         ["description"] = "A website channel, page content type, and field mapping are configured.",
                         ["value"] = IsPageMappingConfigured(options.Page),
                     },
+                    new Dictionary<string, object?>
+                    {
+                        ["key"] = "cover_image_mapping_configured",
+                        ["title"] = "Xperience cover image mapping configured",
+                        ["description"] = "A workspace, reusable image type, asset field, and page reference field are configured.",
+                        ["value"] = StoryChiefCoverImageManager.IsEnabled(options.Page.CoverImage),
+                    },
                 },
             },
         };

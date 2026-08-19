@@ -33,6 +33,12 @@ public sealed class StoryChiefServiceCollectionExtensionsTests
             ["Page:LanguageMappings:en"] = "en-US",
             ["Page:LanguageMappings:nl"] = "nl-BE",
             ["Page:AuditUserName"] = "storychief-integration",
+            ["Page:CoverImage:ContentTypeName"] = "Acme.Image",
+            ["Page:CoverImage:AssetFieldName"] = "ImageFile",
+            ["Page:CoverImage:PageFieldName"] = "ArticleTeaser",
+            ["Page:CoverImage:AltTextFieldName"] = "ImageAltText",
+            ["Page:CoverImage:WorkspaceName"] = "Content",
+            ["Page:CoverImage:MaxFileSizeBytes"] = "4096",
             ["Page:FieldMappings:title:XperienceFieldName"] = "ArticleTitle",
             ["Page:FieldMappings:title:ValueKind"] = "String",
             ["Page:FieldMappings:published_at:XperienceFieldName"] = "ArticlePublishedAt",
@@ -59,6 +65,12 @@ public sealed class StoryChiefServiceCollectionExtensionsTests
             Assert.That(options.Page.LanguageMappings,
                 Is.EquivalentTo(new Dictionary<string, string> { ["en"] = "en-US", ["nl"] = "nl-BE" }));
             Assert.That(options.Page.AuditUserName, Is.EqualTo("storychief-integration"));
+            Assert.That(options.Page.CoverImage.ContentTypeName, Is.EqualTo("Acme.Image"));
+            Assert.That(options.Page.CoverImage.AssetFieldName, Is.EqualTo("ImageFile"));
+            Assert.That(options.Page.CoverImage.PageFieldName, Is.EqualTo("ArticleTeaser"));
+            Assert.That(options.Page.CoverImage.AltTextFieldName, Is.EqualTo("ImageAltText"));
+            Assert.That(options.Page.CoverImage.WorkspaceName, Is.EqualTo("Content"));
+            Assert.That(options.Page.CoverImage.MaxFileSizeBytes, Is.EqualTo(4096));
             Assert.That(options.Page.FieldMappings["title"],
                 Is.EqualTo(new StoryChiefFieldMapping("ArticleTitle", StoryChiefFieldValueKind.String)));
             Assert.That(options.Page.FieldMappings["published_at"],
