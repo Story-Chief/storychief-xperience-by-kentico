@@ -28,34 +28,61 @@ internal sealed class KenticoStoryChiefContentPublisher(
     {
         var options = GetValidatedOptions();
         var webPageManager = CreateWebPageManager(options);
+        string languageName = StoryChiefLanguageResolver.Resolve(story, options);
         string displayName = GetDisplayName(story);
         var itemData = new ContentItemData(StoryChiefFieldMapper.Map(story, options.FieldMappings));
-        var contentItemParameters = new ContentItemParameters(options.ContentTypeName, itemData);
-        var createParameters = new CreateWebPageParameters(displayName, options.LanguageName, contentItemParameters)
-        {
-            ParentWebPageItemID = options.ParentWebPageItemId,
-        };
-
         string? slug = GetOptionalString(story, "seo_slug");
-        if (!string.IsNullOrWhiteSpace(slug))
+        int webPageItemId;
+
+        if (TryGetTranslationSourceId(story, out int sourceWebPageItemId))
         {
-            createParameters.UrlSlug = slug;
+            var variantParameters = new CMS.Websites.CreateLanguageVariantParameters(
+                sourceWebPageItemId,
+                languageName,
+                displayName,
+                itemData);
+            if (!string.IsNullOrWhiteSpace(slug))
+            {
+                variantParameters.UrlSlug = slug;
+            }
+
+            if (!await webPageManager.TryCreateLanguageVariant(variantParameters, cancellationToken))
+            {
+                throw new InvalidOperationException(
+                    $"Xperience could not create the '{languageName}' language variant for page {sourceWebPageItemId}.");
+            }
+
+            webPageItemId = sourceWebPageItemId;
+        }
+        else
+        {
+            var contentItemParameters = new ContentItemParameters(options.ContentTypeName, itemData);
+            var createParameters = new CreateWebPageParameters(displayName, languageName, contentItemParameters)
+            {
+                ParentWebPageItemID = options.ParentWebPageItemId,
+            };
+            if (!string.IsNullOrWhiteSpace(slug))
+            {
+                createParameters.UrlSlug = slug;
+            }
+
+            webPageItemId = await webPageManager.Create(createParameters, cancellationToken);
         }
 
-        int webPageItemId = await webPageManager.Create(createParameters, cancellationToken);
         await AssignPageTemplate(
             webPageManager,
             webPageItemId,
+            languageName,
             options,
             cancellationToken);
         bool publish = ShouldPublish(context);
 
-        if (publish && !await webPageManager.TryPublish(webPageItemId, options.LanguageName, cancellationToken))
+        if (publish && !await webPageManager.TryPublish(webPageItemId, languageName, cancellationToken))
         {
             throw new InvalidOperationException($"Xperience could not publish page {webPageItemId}.");
         }
 
-        string? permalink = await GetPermalink(webPageItemId, options.LanguageName, !publish, cancellationToken);
+        string? permalink = await GetPermalink(webPageItemId, languageName, !publish, cancellationToken);
 
         return new StoryChiefPublishResult(
             webPageItemId.ToString(CultureInfo.InvariantCulture),
@@ -70,12 +97,13 @@ internal sealed class KenticoStoryChiefContentPublisher(
     {
         var options = GetValidatedOptions();
         var webPageManager = CreateWebPageManager(options);
+        string languageName = StoryChiefLanguageResolver.Resolve(story, options);
         int webPageItemId = GetExternalId(story);
         bool publish = ShouldPublish(context);
 
         if (!context.LockUpdates)
         {
-            await webPageManager.TryCreateDraft(webPageItemId, options.LanguageName, cancellationToken);
+            await webPageManager.TryCreateDraft(webPageItemId, languageName, cancellationToken);
 
             var itemData = new ContentItemData(StoryChiefFieldMapper.Map(story, options.FieldMappings));
             string? slug = GetOptionalString(story, "seo_slug");
@@ -84,29 +112,29 @@ internal sealed class KenticoStoryChiefContentPublisher(
                 : new UpdateDraftData(itemData, slug);
             if (!await webPageManager.TryUpdateDraft(
                 webPageItemId,
-                options.LanguageName,
+                languageName,
                 updateData,
                 cancellationToken))
             {
                 throw new InvalidOperationException($"Xperience could not update page {webPageItemId}.");
             }
 
-            if (!string.IsNullOrWhiteSpace(slug))
+            if (!string.IsNullOrWhiteSpace(slug) && !IsTranslation(story))
             {
                 await webPageManager.UpdateTreePathSlug(webPageItemId, slug, cancellationToken);
             }
         }
         else if (!publish)
         {
-            await webPageManager.TryCreateDraft(webPageItemId, options.LanguageName, cancellationToken);
+            await webPageManager.TryCreateDraft(webPageItemId, languageName, cancellationToken);
         }
 
-        if (publish && !await webPageManager.TryPublish(webPageItemId, options.LanguageName, cancellationToken))
+        if (publish && !await webPageManager.TryPublish(webPageItemId, languageName, cancellationToken))
         {
             throw new InvalidOperationException($"Xperience could not publish page {webPageItemId}.");
         }
 
-        string? permalink = await GetPermalink(webPageItemId, options.LanguageName, !publish, cancellationToken);
+        string? permalink = await GetPermalink(webPageItemId, languageName, !publish, cancellationToken);
 
         return new StoryChiefPublishResult(
             webPageItemId.ToString(CultureInfo.InvariantCulture),
@@ -121,10 +149,11 @@ internal sealed class KenticoStoryChiefContentPublisher(
     {
         var options = GetValidatedOptions();
         var webPageManager = CreateWebPageManager(options);
+        string languageName = StoryChiefLanguageResolver.Resolve(story, options);
         int webPageItemId = GetExternalId(story);
 
         await webPageManager.Delete(
-            new DeleteWebPageParameters(webPageItemId, options.LanguageName)
+            new DeleteWebPageParameters(webPageItemId, languageName)
             {
                 Permanently = options.PermanentlyDelete,
             },
@@ -207,6 +236,7 @@ internal sealed class KenticoStoryChiefContentPublisher(
     private async Task AssignPageTemplate(
         IWebPageManager webPageManager,
         int webPageItemId,
+        string languageName,
         StoryChiefPageOptions options,
         CancellationToken cancellationToken)
     {
@@ -217,10 +247,10 @@ internal sealed class KenticoStoryChiefContentPublisher(
 
         var language = contentLanguageInfoProvider
             .Get()
-            .WhereEquals(nameof(ContentLanguageInfo.ContentLanguageName), options.LanguageName)
+            .WhereEquals(nameof(ContentLanguageInfo.ContentLanguageName), languageName)
             .TopN(1)
             .FirstOrDefault() ?? throw CreateConfigurationException(
-                $"The Xperience content language '{options.LanguageName}' does not exist.");
+                $"The Xperience content language '{languageName}' does not exist.");
         var metadata = await webPageManager.GetWebPageMetadata(webPageItemId, cancellationToken);
         string templateConfiguration = JsonSerializer.Serialize(new
         {
@@ -243,6 +273,29 @@ internal sealed class KenticoStoryChiefContentPublisher(
             throw new JsonException("The StoryChief external_id is missing.");
         }
 
+        return GetPageIdentifier(externalId, "external_id");
+    }
+
+    private static bool TryGetTranslationSourceId(JsonElement story, out int webPageItemId)
+    {
+        webPageItemId = 0;
+        if (!story.TryGetProperty("source", out var source) || source.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        if (!source.TryGetProperty("external_id", out var externalId))
+        {
+            throw new JsonException(
+                "The StoryChief source.external_id is missing. Publish the source story before its translation.");
+        }
+
+        webPageItemId = GetPageIdentifier(externalId, "source.external_id");
+        return true;
+    }
+
+    private static int GetPageIdentifier(JsonElement externalId, string propertyPath)
+    {
         if (externalId.ValueKind == JsonValueKind.Number && externalId.TryGetInt32(out int numericId))
         {
             return numericId;
@@ -254,8 +307,12 @@ internal sealed class KenticoStoryChiefContentPublisher(
             return stringId;
         }
 
-        throw new JsonException("The StoryChief external_id must be a valid Xperience page identifier.");
+        throw new JsonException(
+            $"The StoryChief {propertyPath} must be a valid Xperience page identifier.");
     }
+
+    private static bool IsTranslation(JsonElement story) =>
+        story.TryGetProperty("source", out var source) && source.ValueKind == JsonValueKind.Object;
 
     private static string GetDisplayName(JsonElement story) =>
         GetOptionalString(story, "title")
