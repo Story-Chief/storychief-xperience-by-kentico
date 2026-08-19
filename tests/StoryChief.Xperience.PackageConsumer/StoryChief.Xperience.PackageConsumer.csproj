@@ -5,7 +5,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <StoryChiefPackageVersion Condition="'$(StoryChiefPackageVersion)' == ''">1.0.0-rc.2</StoryChiefPackageVersion>
+    <StoryChiefPackageVersion Condition="'$(StoryChiefPackageVersion)' == ''">1.0.0</StoryChiefPackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
