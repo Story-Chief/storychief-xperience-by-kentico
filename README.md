@@ -1,4 +1,4 @@
-# StoryChief for Xperience by Kentico
+# [StoryChief](https://www.storychief.io/) for Xperience by Kentico
 
 [![CI: Build and Test](https://github.com/Story-Chief/storychief-xperience-by-kentico/actions/workflows/ci.yml/badge.svg)](https://github.com/Story-Chief/storychief-xperience-by-kentico/actions/workflows/ci.yml)
 
@@ -15,7 +15,7 @@ An open-source Xperience by Kentico integration for receiving authenticated publ
 
 - ASP.NET Core 8.0
 - Xperience by Kentico 31.7.4 or newer
-- A StoryChief webhook destination and signing key
+- A [StoryChief webhook destination](https://help.storychief.io/en/articles/483630-publish-your-articles-via-webhook) and signing key
 
 ## Installation
 
