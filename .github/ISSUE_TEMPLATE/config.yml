@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://get.storychief.io/hubfs/gdpr/Responsible_Disclosure_Policy.pdf
+    about: Report vulnerabilities privately according to StoryChief's responsible disclosure policy.
+  - name: StoryChief product support
+    url: https://help.storychief.io/en/articles/2731489-contact-storychief-support
+    about: Get help with StoryChief accounts, workspaces, and product behavior.

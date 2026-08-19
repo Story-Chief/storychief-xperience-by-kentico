@@ -10,11 +10,11 @@ An open-source Xperience by Kentico integration for receiving authenticated publ
 ## Requirements
 
 | Xperience version | Package version |
-| ----------------- | --------------- |
-| >= 31.7.1         | 1.0.0 prerelease |
+| --- | --- |
+| >= 31.7.4 | 1.0.0 prerelease |
 
 - ASP.NET Core 8.0
-- Xperience by Kentico 31.7.1 or newer
+- Xperience by Kentico 31.7.4 or newer
 - A StoryChief webhook destination and signing key
 
 ## Development installation
@@ -63,7 +63,7 @@ For a complete, buildable host project, see the [example Xperience application](
 
 ## Contributing
 
-See [Contributing Setup](./docs/Contributing-Setup.md).
+See [CONTRIBUTING.md](./CONTRIBUTING.md) and the [contributor setup guide](./docs/Contributing-Setup.md).
 
 ## License
 
@@ -71,4 +71,6 @@ Distributed under the MIT License. See [LICENSE.md](./LICENSE.md).
 
 ## Support
 
-This is a StoryChief-maintained integration and is not yet listed as an official Kentico integration. Please use this repository's issue tracker during development.
+This is a StoryChief-maintained integration and is not yet listed as an official Kentico integration. See [SUPPORT.md](./SUPPORT.md) for support boundaries and reporting channels.
+
+Please report security vulnerabilities according to [SECURITY.md](./SECURITY.md).

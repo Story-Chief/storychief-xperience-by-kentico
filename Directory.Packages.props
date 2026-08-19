@@ -6,11 +6,11 @@
     <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="Kentico.Xperience.Admin" Version="31.7.1" />
-    <PackageVersion Include="Kentico.Xperience.Core" Version="31.7.1" />
-    <PackageVersion Include="Kentico.Xperience.WebApp" Version="31.7.1" />
-    <PackageVersion Include="kentico.xperience.azurestorage" Version="31.7.1" />
-    <PackageVersion Include="kentico.xperience.imageprocessing" Version="31.7.1" />
+    <PackageVersion Include="Kentico.Xperience.Admin" Version="31.7.4" />
+    <PackageVersion Include="Kentico.Xperience.Core" Version="31.7.4" />
+    <PackageVersion Include="Kentico.Xperience.WebApp" Version="31.7.4" />
+    <PackageVersion Include="kentico.xperience.azurestorage" Version="31.7.4" />
+    <PackageVersion Include="kentico.xperience.imageprocessing" Version="31.7.4" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageVersion Include="NUnit" Version="4.4.0" />
     <PackageVersion Include="NUnit.Analyzers" Version="4.10.0" />

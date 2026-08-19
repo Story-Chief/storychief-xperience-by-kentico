@@ -9,7 +9,7 @@
 
 ```bash
 dotnet restore
-dotnet format StoryChief.Xperience.slnx --verify-no-changes
+dotnet format StoryChief.Xperience.slnx --exclude ./examples/** --verify-no-changes
 dotnet build StoryChief.Xperience.slnx --configuration Release --no-restore
 dotnet test StoryChief.Xperience.slnx --configuration Release --no-build --no-restore
 ```
