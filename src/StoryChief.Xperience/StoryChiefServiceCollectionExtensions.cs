@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -18,7 +19,29 @@ public static class StoryChiefServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(configureOptions);
 
         services.Configure(configureOptions);
-        services.TryAddScoped<StoryChief.Xperience.IStoryChiefContentPublisher, StoryChief.Xperience.KenticoStoryChiefContentPublisher>();
+
+        return AddStoryChiefPublisher(services);
+    }
+
+    /// <summary>
+    /// Registers StoryChief webhook services using an application configuration section.
+    /// </summary>
+    public static IServiceCollection AddStoryChiefXperience(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configuration);
+
+        services.Configure<StoryChief.Xperience.StoryChiefXperienceOptions>(configuration);
+
+        return AddStoryChiefPublisher(services);
+    }
+
+    private static IServiceCollection AddStoryChiefPublisher(IServiceCollection services)
+    {
+        services.TryAddScoped<StoryChief.Xperience.IStoryChiefContentPublisher,
+            StoryChief.Xperience.KenticoStoryChiefContentPublisher>();
 
         return services;
     }

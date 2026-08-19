@@ -34,6 +34,42 @@ The default endpoint is `/storychief/webhook`. A custom path can be supplied to 
 
 Configure the public HTTPS URL as the webhook endpoint in StoryChief. The signing key entered in the Xperience application's secret configuration must be the same key used by that StoryChief destination.
 
+### Configuration-based registration
+
+The integration can alternatively bind all options from an `IConfiguration` section:
+
+```csharp
+builder.Services.AddStoryChiefXperience(
+    builder.Configuration.GetSection(StoryChiefXperienceOptions.SectionName));
+```
+
+```json
+{
+  "StoryChief": {
+    "SigningKey": "",
+    "MaxRequestBodyBytes": 10485760,
+    "Page": {
+      "WebsiteChannelName": "AcmeWebsite",
+      "ContentTypeName": "Acme.ArticlePage",
+      "LanguageName": "en",
+      "AuditUserName": "storychief-integration",
+      "FieldMappings": {
+        "title": {
+          "XperienceFieldName": "ArticleTitle",
+          "ValueKind": "String"
+        },
+        "published_at": {
+          "XperienceFieldName": "ArticlePublishedAt",
+          "ValueKind": "DateTime"
+        }
+      }
+    }
+  }
+}
+```
+
+Keep `SigningKey` empty in committed configuration and supply it through user secrets, environment variables, or the production secret store.
+
 ## Configure the target page
 
 The integration creates website pages using Kentico's `IWebPageManager` API. Configure:
