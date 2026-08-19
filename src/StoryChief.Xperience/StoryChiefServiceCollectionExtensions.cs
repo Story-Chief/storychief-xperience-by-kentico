@@ -18,7 +18,7 @@ public static class StoryChiefServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(configureOptions);
 
         services.Configure(configureOptions);
-        services.TryAddScoped<StoryChief.Xperience.IStoryChiefContentPublisher, StoryChief.Xperience.UnconfiguredStoryChiefContentPublisher>();
+        services.TryAddScoped<StoryChief.Xperience.IStoryChiefContentPublisher, StoryChief.Xperience.KenticoStoryChiefContentPublisher>();
 
         return services;
     }

@@ -5,7 +5,7 @@
 An open-source Xperience by Kentico integration for receiving authenticated publishing webhooks from StoryChief.
 
 > [!IMPORTANT]
-> This package is under active development. Webhook authentication, connection checks, and the content-publisher extension point are implemented. The default Xperience content-type mapping is the next milestone.
+> This package is under active development and is not published to NuGet yet.
 
 ## Requirements
 
@@ -28,6 +28,14 @@ builder.Services.AddStoryChiefXperience(options =>
 {
     options.SigningKey = builder.Configuration["StoryChief:SigningKey"]
         ?? throw new InvalidOperationException("StoryChief:SigningKey is missing.");
+
+    options.Page.WebsiteChannelName = "AcmeWebsite";
+    options.Page.ContentTypeName = "Acme.ArticlePage";
+    options.Page.LanguageName = "en";
+    options.Page.MapField("title", "ArticleTitle");
+    options.Page.MapField("content", "ArticleContent");
+    options.Page.MapField("excerpt", "ArticleExcerpt");
+    options.Page.MapField("published_at", "ArticlePublishedAt", StoryChiefFieldValueKind.DateTime);
 });
 
 // After app creation and the usual middleware registrations:
@@ -36,14 +44,17 @@ app.MapStoryChiefWebhook();
 
 Store the key outside source control using user secrets, environment variables, or your production secret store.
 
-Projects provide an `IStoryChiefContentPublisher` implementation to map StoryChief's generic story fields to their Xperience content type. See the [Usage Guide](./docs/Usage-Guide.md).
+The target must be an existing page content type whose fields match the configured value types. See the [Usage Guide](./docs/Usage-Guide.md) for parent-page, audit-user, deletion, nested-field, and custom-publisher configuration.
 
 ## Current scope
 
 - `POST /storychief/webhook`
 - SHA-256 HMAC validation compatible with StoryChief's PHP webhook contract
 - Signed connection-test metadata
-- `publish`, `update`, and `delete` dispatch to `IStoryChiefContentPublisher`
+- Website page creation, draft updates, publishing, URL resolution, and deletion through Kentico's public APIs
+- Configurable mapping from StoryChief fields to Xperience field code names
+- Support for publishing as draft and status-only updates
+- An `IStoryChiefContentPublisher` extension point for advanced media, taxonomy, author, or project-specific mapping
 - Request-size limit and safe error responses
 
 ## Contributing

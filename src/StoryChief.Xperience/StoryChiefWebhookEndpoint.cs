@@ -50,7 +50,7 @@ internal static class StoryChiefWebhookEndpoint
         string eventName = eventElement.GetString()!;
         if (eventName.Equals("test", StringComparison.Ordinal))
         {
-            return SignedJson(CreateConnectionMetadata(), options.SigningKey);
+            return SignedJson(CreateConnectionMetadata(options), options.SigningKey);
         }
 
         if (!root.TryGetProperty("data", out var story) || story.ValueKind != JsonValueKind.Object)
@@ -101,12 +101,19 @@ internal static class StoryChiefWebhookEndpoint
                 detail: exception.Message,
                 statusCode: StatusCodes.Status501NotImplemented);
         }
+        catch (JsonException exception)
+        {
+            return Results.Problem(
+                title: "Invalid StoryChief payload",
+                detail: exception.Message,
+                statusCode: StatusCodes.Status400BadRequest);
+        }
     }
 
     private static IResult SignedJson(object value, string signingKey) =>
         new StoryChiefSignedJsonResult(StoryChiefWebhookSignature.Sign(value, signingKey));
 
-    private static Dictionary<string, object?> CreateConnectionMetadata()
+    private static Dictionary<string, object?> CreateConnectionMetadata(StoryChiefXperienceOptions options)
     {
         var pluginVersion = typeof(StoryChiefWebhookEndpoint).Assembly.GetName().Version ?? new Version(1, 0, 0);
         var cmsVersion = typeof(CMS.AssemblyDiscoverableAttribute).Assembly.GetName().Version;
@@ -122,11 +129,27 @@ internal static class StoryChiefWebhookEndpoint
                     new Dictionary<string, object?> { ["type"] = "cms_type", ["value"] = "xperience-by-kentico" },
                     new Dictionary<string, object?> { ["type"] = "cms_version", ["value"] = cmsVersion?.ToString(3) ?? "unknown" },
                 },
-                ["features"] = Array.Empty<string>(),
-                ["settings"] = Array.Empty<object>(),
+                ["features"] = new[] { "publish_as_draft", "lock_updates" },
+                ["settings"] = new object[]
+                {
+                    new Dictionary<string, object?>
+                    {
+                        ["key"] = "page_mapping_configured",
+                        ["title"] = "Xperience page mapping configured",
+                        ["description"] = "A website channel, page content type, and field mapping are configured.",
+                        ["value"] = IsPageMappingConfigured(options.Page),
+                    },
+                },
             },
         };
     }
+
+    private static bool IsPageMappingConfigured(StoryChiefPageOptions options) =>
+        !string.IsNullOrWhiteSpace(options.WebsiteChannelName)
+        && !string.IsNullOrWhiteSpace(options.ContentTypeName)
+        && !string.IsNullOrWhiteSpace(options.LanguageName)
+        && !string.IsNullOrWhiteSpace(options.AuditUserName)
+        && options.FieldMappings.Count > 0;
 
     private static string? GetOptionalString(JsonElement parent, string propertyName) =>
         parent.TryGetProperty(propertyName, out var property) && property.ValueKind == JsonValueKind.String
