@@ -6,7 +6,7 @@ Before running it:
 
 1. Add an Xperience `CMSConnectionString` using user secrets or local configuration.
 2. Set `StoryChief:SigningKey` with user secrets.
-3. Replace the sample channel, content type, and field code names in `appsettings.json` and `Program.cs` with values from the target Xperience project.
+3. Replace the sample channel, content type, field, taxonomy, and asset code names in `appsettings.json` with values from the target Xperience project.
 4. Initialize or restore the Xperience database using the normal Xperience tooling.
 
 ```bash

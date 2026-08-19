@@ -40,6 +40,9 @@ builder.Services.AddStoryChiefXperience(options =>
     options.Page.MapField("excerpt", "ArticleExcerpt");
     options.Page.MapField("published_at", "ArticlePublishedAt", StoryChiefFieldValueKind.DateTime);
 
+    options.Page.MapTaxonomy("tags", "ArticleTags", "ArticleTaxonomy");
+    options.Page.MapTaxonomy("categories", "ArticleCategories", "ArticleCategories");
+
     options.Page.CoverImage.ContentTypeName = "Acme.Image";
     options.Page.CoverImage.AssetFieldName = "ImageFile";
     options.Page.CoverImage.PageFieldName = "ArticleCoverImage";
@@ -66,8 +69,9 @@ For a complete, buildable host project, see the [example Xperience application](
 - Configurable mapping from StoryChief fields to Xperience field code names
 - Support for publishing as draft and status-only updates
 - Multilingual page variants using StoryChief translation relationships and configurable language mappings
+- Native taxonomy mapping for StoryChief tags, primary categories, and categories
 - Cover-image sideloading into reusable Content Hub assets, including alternative text, updates, removal, and cleanup
-- An `IStoryChiefContentPublisher` extension point for advanced taxonomy, author, or project-specific mapping
+- An `IStoryChiefContentPublisher` extension point for advanced author or project-specific mapping
 - Request-size limit and safe error responses
 - A buildable Xperience host example and endpoint-level webhook tests
 

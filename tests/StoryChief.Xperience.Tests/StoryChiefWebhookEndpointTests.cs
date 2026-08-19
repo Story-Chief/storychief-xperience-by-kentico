@@ -61,6 +61,7 @@ public sealed class StoryChiefWebhookEndpointTests
             options.Page.CoverImage.AssetFieldName = "ImageFile";
             options.Page.CoverImage.PageFieldName = "ArticleTeaser";
             options.Page.CoverImage.WorkspaceName = "Acme.Content";
+            options.Page.MapTaxonomy("tags", "ArticleTags", "ArticleTaxonomy");
         });
 
         using var payload = JsonDocument.Parse(response.Body);
@@ -72,9 +73,10 @@ public sealed class StoryChiefWebhookEndpointTests
             Assert.That(HasValidResponseSignature(response.Body), Is.True);
             Assert.That(publisher.TotalCalls, Is.Zero);
             Assert.That(metadata.GetProperty("features").EnumerateArray().Select(value => value.GetString()),
-                Is.EquivalentTo(new[] { "publish_as_draft", "lock_updates", "multilingual" }));
+                Is.EquivalentTo(new[] { "publish_as_draft", "lock_updates", "multilingual", "taxonomy" }));
             Assert.That(metadata.GetProperty("settings")[0].GetProperty("value").GetBoolean(), Is.True);
             Assert.That(metadata.GetProperty("settings")[1].GetProperty("value").GetBoolean(), Is.True);
+            Assert.That(metadata.GetProperty("settings")[2].GetProperty("value").GetBoolean(), Is.True);
         }
     }
 

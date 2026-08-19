@@ -26,6 +26,10 @@ builder.Services.AddStoryChiefXperience(options =>
     options.Page.MapField("seo_description", "ArticleSeoDescription");
     options.Page.MapField("published_at", "ArticlePublishedAt", StoryChiefFieldValueKind.DateTime);
 
+    options.Page.MapTaxonomy("tags", "ArticleTags", "ArticleTaxonomy");
+    options.Page.MapTaxonomy("category", "ArticlePrimaryCategory", "ArticleCategories");
+    options.Page.MapTaxonomy("categories", "ArticleCategories", "ArticleCategories");
+
     options.Page.CoverImage.ContentTypeName = "Acme.Image";
     options.Page.CoverImage.AssetFieldName = "ImageFile";
     options.Page.CoverImage.PageFieldName = "ArticleCoverImage";
@@ -74,6 +78,16 @@ builder.Services.AddStoryChiefXperience(
         "AltTextFieldName": "ImageAltText",
         "WorkspaceName": "Acme.Content",
         "MaxFileSizeBytes": 10485760
+      },
+      "TaxonomyMappings": {
+        "tags": {
+          "XperienceFieldName": "ArticleTags",
+          "TaxonomyName": "ArticleTaxonomy",
+          "CreateMissingTags": true,
+          "TagMappings": {
+            "2769118967": "GoGreen"
+          }
+        }
       },
       "FieldMappings": {
         "title": {
@@ -141,6 +155,41 @@ Nested property paths such as `custom_fields.reading_time` are supported. Missin
 
 The destination Xperience fields must accept the resulting .NET values. Field validation remains controlled by the configured Xperience content type.
 
+## Publish taxonomy tags and categories
+
+[Xperience taxonomy](https://docs.kentico.com/documentation/developers-and-admins/configuration/taxonomies) mapping supports StoryChief's `tags`, `category`, and `categories` payloads. Prepare the content model with an existing taxonomy and a taxonomy field on the target page type, then map the StoryChief property to both code names:
+
+```csharp
+var tags = options.Page.MapTaxonomy("tags", "ArticleTags", "ArticleTaxonomy");
+var primaryCategory = options.Page.MapTaxonomy(
+    "category",
+    "ArticlePrimaryCategory",
+    "ArticleCategories");
+options.Page.MapTaxonomy("categories", "ArticleCategories", "ArticleCategories");
+```
+
+Each mapping handles the StoryChief wrapper shape (`tags.data`, `category.data`, or `categories.data`). A missing property leaves the Xperience field unchanged, while an empty array or `null` clears the configured taxonomy field. Updates replace the field's complete tag selection.
+
+Terms are resolved in this order:
+
+1. An explicit mapping from the StoryChief `storychief_id`, slug, or name to an Xperience tag code name.
+2. A previously created integration-managed tag with the same stable StoryChief identifier.
+3. A unique existing tag whose code name matches the StoryChief slug or name, or whose localized title matches the StoryChief name.
+4. A new integration-managed tag when `CreateMissingTags` is enabled, which is the default.
+
+Use explicit mappings when an established Xperience tag has a different code name:
+
+```csharp
+tags.MapTag("2769118967", "GoGreen");
+tags.MapTag("sustainability", "SustainableContent");
+```
+
+Automatically created tags use deterministic code names, so subsequent updates and translated variants reuse them. Their titles are updated in the current Xperience language. The integration never creates or deletes taxonomy groups, never deletes tags when an article is removed, and never renames explicitly mapped or otherwise user-managed tags.
+
+Set `CreateMissingTags` to `false` to require every incoming term to match an existing, previously integration-managed, or explicitly mapped tag. The setting prevents new tag creation; it does not disable stable reuse of tags the integration created earlier. Missing and ambiguous matches are reported as configuration errors instead of being silently ignored.
+
+Do not also map the same StoryChief property and Xperience destination field through `MapField`; taxonomy mappings write Xperience `IEnumerable<TagReference>` values rather than JSON text.
+
 ## Publish cover images
 
 Cover-image support uses Xperience [content item assets](https://docs.kentico.com/documentation/business-users/content-hub/content-item-assets), not obsolete media libraries. Prepare the content model with:
@@ -168,7 +217,7 @@ Remote downloads must use HTTPS, resolve to public network addresses, return an 
 
 ## Advanced project-specific mapping
 
-Direct mapping intentionally does not create taxonomy tags, author content items, or arbitrary linked content. Projects that need those features can replace the default publisher with an `IStoryChiefContentPublisher` implementation:
+Direct mapping intentionally does not create author content items or arbitrary linked content. Projects that need those features can replace the default publisher with an `IStoryChiefContentPublisher` implementation:
 
 ```csharp
 public sealed class ArticlePublisher : IStoryChiefContentPublisher
@@ -178,7 +227,7 @@ public sealed class ArticlePublisher : IStoryChiefContentPublisher
         StoryChiefPublishingContext context,
         CancellationToken cancellationToken)
     {
-        // Map title, content, excerpt, SEO fields, taxonomy, author, and project-specific content
+        // Map title, content, excerpt, SEO fields, author, and project-specific content
         // to the project's generated Xperience content-type model.
         throw new NotImplementedException();
     }
