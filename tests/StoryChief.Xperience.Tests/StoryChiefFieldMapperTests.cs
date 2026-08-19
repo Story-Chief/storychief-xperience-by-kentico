@@ -29,14 +29,14 @@ public sealed class StoryChiefFieldMapperTests
 
         var result = StoryChiefFieldMapper.Map(payload.RootElement, mappings);
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(result["ArticleTitle"], Is.EqualTo("A mapped article"));
             Assert.That(result["ArticlePublishedAt"], Is.EqualTo(new DateTime(2026, 8, 19, 6, 30, 0, DateTimeKind.Utc)));
             Assert.That(result["ArticleReadingTime"], Is.EqualTo(7));
             Assert.That(result["ArticleSponsored"], Is.EqualTo(true));
             Assert.That(result["ArticleTagsJson"], Is.EqualTo("[\"Kentico\", \"StoryChief\"]"));
-        });
+        }
     }
 
     [Test]
@@ -71,8 +71,8 @@ public sealed class StoryChiefFieldMapperTests
             ["published_at"] = new("ArticlePublishedAt", StoryChiefFieldValueKind.DateTime),
         };
 
-        var exception = Assert.Throws<JsonException>(() =>
-            StoryChiefFieldMapper.Map(payload.RootElement, mappings))!;
+        var exception = Assert.Throws<JsonException>(new Action(
+            () => StoryChiefFieldMapper.Map(payload.RootElement, mappings)));
 
         Assert.That(exception.Message, Does.Contain("published_at"));
     }

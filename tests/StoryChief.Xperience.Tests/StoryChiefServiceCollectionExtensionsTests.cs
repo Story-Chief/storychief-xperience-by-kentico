@@ -54,7 +54,7 @@ public sealed class StoryChiefServiceCollectionExtensionsTests
         using var provider = services.BuildServiceProvider();
         var options = provider.GetRequiredService<IOptions<StoryChiefXperienceOptions>>().Value;
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(options.SigningKey, Is.EqualTo("configured-secret"));
             Assert.That(options.MaxRequestBodyBytes, Is.EqualTo(2048));
@@ -75,6 +75,6 @@ public sealed class StoryChiefServiceCollectionExtensionsTests
                 Is.EqualTo(new StoryChiefFieldMapping("ArticleTitle", StoryChiefFieldValueKind.String)));
             Assert.That(options.Page.FieldMappings["published_at"],
                 Is.EqualTo(new StoryChiefFieldMapping("ArticlePublishedAt", StoryChiefFieldValueKind.DateTime)));
-        });
+        }
     }
 }

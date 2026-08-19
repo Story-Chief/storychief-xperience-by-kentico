@@ -21,13 +21,13 @@ public sealed class StoryChiefCoverImageTests
 
         var image = StoryChiefCoverImageParser.Parse(payload.RootElement);
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(image.State, Is.EqualTo(StoryChiefCoverImageState.Present));
             Assert.That(image.Url, Is.EqualTo(new Uri("https://images.storychief.test/covers/article.png")));
             Assert.That(image.Name, Is.EqualTo("article.png"));
             Assert.That(image.AltText, Is.EqualTo("Coffee being poured"));
-        });
+        }
     }
 
     [TestCase("{}", "Unspecified")]
@@ -49,10 +49,10 @@ public sealed class StoryChiefCoverImageTests
             {"featured_image":{"url":"http://images.storychief.test/article.png"}}
             """);
 
-        var exception = Assert.Throws<JsonException>(() =>
-            StoryChiefCoverImageParser.Parse(payload.RootElement));
+        var exception = Assert.Throws<JsonException>(new Action(
+            () => StoryChiefCoverImageParser.Parse(payload.RootElement)));
 
-        Assert.That(exception!.Message, Does.Contain("HTTPS"));
+        Assert.That(exception.Message, Does.Contain("HTTPS"));
     }
 
     [Test]
@@ -87,7 +87,7 @@ public sealed class StoryChiefCoverImageTests
 
         var result = await downloader.DownloadAsync(image, 1024, CancellationToken.None);
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(result.Data, Is.EqualTo(content));
             Assert.That(result.Name, Is.EqualTo("Article-hero.png"));
@@ -97,7 +97,7 @@ public sealed class StoryChiefCoverImageTests
                 new Uri("https://images.storychief.test/original"),
                 new Uri("https://cdn.storychief.test/final"),
             }));
-        });
+        }
     }
 
     [Test]
@@ -115,10 +115,10 @@ public sealed class StoryChiefCoverImageTests
             StoryChiefCoverImageState.Present,
             new Uri("https://images.storychief.test/large.jpg"));
 
-        var exception = Assert.ThrowsAsync<JsonException>(() =>
-            downloader.DownloadAsync(image, 4, CancellationToken.None));
+        var exception = Assert.ThrowsAsync<JsonException>(new Func<Task>(
+            () => downloader.DownloadAsync(image, 4, CancellationToken.None)));
 
-        Assert.That(exception!.Message, Does.Contain("4-byte limit"));
+        Assert.That(exception.Message, Does.Contain("4-byte limit"));
     }
 
     [Test]
@@ -139,11 +139,11 @@ public sealed class StoryChiefCoverImageTests
 
         var result = await downloader.DownloadAsync(image, 1024, CancellationToken.None);
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(result.Extension, Is.EqualTo(".png"));
             Assert.That(result.Name, Is.EqualTo("misleading.png"));
-        });
+        }
     }
 
     [Test]
@@ -162,11 +162,11 @@ public sealed class StoryChiefCoverImageTests
             "AcmeWebsite",
             "nl-BE");
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(english, Is.EqualTo("StoryChiefCover_EA8CBFE573B1326B145FB3DC"));
             Assert.That(dutch, Is.Not.EqualTo(english));
-        });
+        }
     }
 
     [TestCase("127.0.0.1")]
