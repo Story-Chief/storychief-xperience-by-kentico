@@ -62,3 +62,19 @@ jobs:
 
       - name: Test Solution
         run: dotnet test --configuration Release --no-build --no-restore
+
+      - name: Pack NuGet package
+        run: dotnet pack src/StoryChief.Xperience/StoryChief.Xperience.csproj --configuration Release --no-build --no-restore --output artifacts
+
+      - name: Resolve package version
+        id: package
+        run: echo "version=$(dotnet msbuild src/StoryChief.Xperience/StoryChief.Xperience.csproj -getProperty:PackageVersion)" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare package installation test
+        run: cp -R tests/StoryChief.Xperience.PackageConsumer /tmp/storychief-package-consumer
+
+      - name: Restore package consumer
+        run: dotnet restore /tmp/storychief-package-consumer --source "${{ github.workspace }}/artifacts" --source https://api.nuget.org/v3/index.json -p:StoryChiefPackageVersion=${{ steps.package.outputs.version }}
+
+      - name: Build package consumer
+        run: dotnet build /tmp/storychief-package-consumer --configuration Release --no-restore -p:StoryChiefPackageVersion=${{ steps.package.outputs.version }}

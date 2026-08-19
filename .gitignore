@@ -109,6 +109,7 @@ $RECYCLE.BIN/
 *.jfm
 *.svclog
 *.nupkg
+*.snupkg
 
 # nodejs
 node_modules
