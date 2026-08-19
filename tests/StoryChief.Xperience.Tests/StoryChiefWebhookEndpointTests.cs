@@ -24,7 +24,7 @@ public sealed class StoryChiefWebhookEndpointTests
 
         var response = await InvokeAsync(SignRequest(unsignedBody), publisher);
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(response.StatusCode, Is.EqualTo(StatusCodes.Status200OK));
             Assert.That(response.ContentType, Is.EqualTo("application/json; charset=utf-8"));
@@ -32,15 +32,15 @@ public sealed class StoryChiefWebhookEndpointTests
             Assert.That(publisher.LastStory.GetProperty("title").GetString(), Is.EqualTo("A story"));
             Assert.That(publisher.LastContext, Is.EqualTo(new StoryChiefPublishingContext("publish", "publish", false)));
             Assert.That(HasValidResponseSignature(response.Body), Is.True);
-        });
+        }
 
         using var payload = JsonDocument.Parse(response.Body);
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(payload.RootElement.GetProperty("id").GetString(), Is.EqualTo("42"));
             Assert.That(payload.RootElement.GetProperty("permalink").GetString(), Is.EqualTo("https://example.com/a-story"));
             Assert.That(payload.RootElement.GetProperty("status").GetString(), Is.EqualTo("published"));
-        });
+        }
     }
 
     [Test]
@@ -66,7 +66,7 @@ public sealed class StoryChiefWebhookEndpointTests
         using var payload = JsonDocument.Parse(response.Body);
         var metadata = payload.RootElement.GetProperty("meta");
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(response.StatusCode, Is.EqualTo(StatusCodes.Status200OK));
             Assert.That(HasValidResponseSignature(response.Body), Is.True);
@@ -75,7 +75,7 @@ public sealed class StoryChiefWebhookEndpointTests
                 Is.EquivalentTo(new[] { "publish_as_draft", "lock_updates", "multilingual" }));
             Assert.That(metadata.GetProperty("settings")[0].GetProperty("value").GetBoolean(), Is.True);
             Assert.That(metadata.GetProperty("settings")[1].GetProperty("value").GetBoolean(), Is.True);
-        });
+        }
     }
 
     [Test]
@@ -87,11 +87,11 @@ public sealed class StoryChiefWebhookEndpointTests
 
         var response = await InvokeAsync(body, publisher);
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(response.StatusCode, Is.EqualTo(StatusCodes.Status400BadRequest));
             Assert.That(publisher.TotalCalls, Is.Zero);
-        });
+        }
     }
 
     [Test]
@@ -101,11 +101,11 @@ public sealed class StoryChiefWebhookEndpointTests
 
         var response = await InvokeAsync("{}", publisher, options => options.MaxRequestBodyBytes = 1);
 
-        Assert.Multiple(() =>
+        using (Assert.EnterMultipleScope())
         {
             Assert.That(response.StatusCode, Is.EqualTo(StatusCodes.Status413PayloadTooLarge));
             Assert.That(publisher.TotalCalls, Is.Zero);
-        });
+        }
     }
 
     private static async Task<WebhookResponse> InvokeAsync(

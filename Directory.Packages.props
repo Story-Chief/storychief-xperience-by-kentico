@@ -11,11 +11,11 @@
     <PackageVersion Include="Kentico.Xperience.WebApp" Version="31.7.4" />
     <PackageVersion Include="kentico.xperience.azurestorage" Version="31.7.4" />
     <PackageVersion Include="kentico.xperience.imageprocessing" Version="31.7.4" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
-    <PackageVersion Include="NUnit" Version="4.4.0" />
-    <PackageVersion Include="NUnit.Analyzers" Version="4.10.0" />
-    <PackageVersion Include="NUnit3TestAdapter" Version="5.1.0" />
-    <PackageVersion Include="coverlet.collector" Version="6.0.4" />
-    <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.20.0.135146" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.9.0" />
+    <PackageVersion Include="NUnit" Version="4.6.1" />
+    <PackageVersion Include="NUnit.Analyzers" Version="4.14.0" />
+    <PackageVersion Include="NUnit3TestAdapter" Version="6.2.0" />
+    <PackageVersion Include="coverlet.collector" Version="10.0.1" />
+    <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.32.0.713" />
   </ItemGroup>
 </Project>

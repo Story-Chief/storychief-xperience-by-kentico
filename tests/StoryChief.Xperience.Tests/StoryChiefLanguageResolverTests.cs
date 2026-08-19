@@ -46,10 +46,10 @@ public sealed class StoryChiefLanguageResolverTests
         options.MapLanguage("en", "en-US");
         using var story = JsonDocument.Parse("""{"language":"nl"}""");
 
-        var exception = Assert.Throws<StoryChiefPublisherNotConfiguredException>(
-            () => StoryChiefLanguageResolver.Resolve(story.RootElement, options));
+        var exception = Assert.Throws<StoryChiefPublisherNotConfiguredException>(new Action(
+            () => StoryChiefLanguageResolver.Resolve(story.RootElement, options)));
 
-        Assert.That(exception!.Message, Does.Contain("'nl'"));
+        Assert.That(exception.Message, Does.Contain("'nl'"));
     }
 
     [Test]
@@ -59,6 +59,7 @@ public sealed class StoryChiefLanguageResolverTests
         options.MapLanguage("en", "en-US");
         using var story = JsonDocument.Parse("""{"language":42}""");
 
-        Assert.Throws<JsonException>(() => StoryChiefLanguageResolver.Resolve(story.RootElement, options));
+        Assert.Throws<JsonException>(new Action(
+            () => StoryChiefLanguageResolver.Resolve(story.RootElement, options)));
     }
 }
