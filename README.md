@@ -5,13 +5,13 @@
 An open-source Xperience by Kentico integration for receiving authenticated publishing webhooks from [StoryChief](https://www.storychief.io/).
 
 > [!NOTE]
-> The `1.0.0-rc.1` release is the first public release candidate. Validate it in a non-production Xperience environment before rolling it out broadly.
+> The `1.0.0-rc.2` release is a public release candidate. Validate it in a non-production Xperience environment before rolling it out broadly.
 
 ## Requirements
 
 | Xperience version | Package version |
 | --- | --- |
-| >= 31.7.4 | 1.0.0-rc.1 |
+| >= 31.7.4 | 1.0.0-rc.2 |
 
 - ASP.NET Core 8.0
 - Xperience by Kentico 31.7.4 or newer
@@ -22,7 +22,7 @@ An open-source Xperience by Kentico integration for receiving authenticated publ
 Install the package from NuGet.org:
 
 ```bash
-dotnet add package StoryChief.Xperience --version 1.0.0-rc.1
+dotnet add package StoryChief.Xperience --version 1.0.0-rc.2
 ```
 
 Contributors can reference `src/StoryChief.Xperience/StoryChief.Xperience.csproj` directly while developing locally.
