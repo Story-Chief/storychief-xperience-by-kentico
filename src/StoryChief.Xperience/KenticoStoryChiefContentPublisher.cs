@@ -5,6 +5,7 @@ using CMS.ContentEngine;
 using CMS.DataEngine;
 using CMS.Membership;
 using CMS.Websites;
+using CMS.Websites.VisualBuilder.Internal;
 
 using Microsoft.Extensions.Options;
 
@@ -12,10 +13,12 @@ namespace StoryChief.Xperience;
 
 internal sealed class KenticoStoryChiefContentPublisher(
     IWebPageManagerFactory webPageManagerFactory,
-    IInfoByNameProvider<ChannelInfo> channelInfoProvider,
+    IInfoProvider<ChannelInfo> channelInfoProvider,
     IInfoProvider<WebsiteChannelInfo> websiteChannelInfoProvider,
+    IInfoProvider<ContentLanguageInfo> contentLanguageInfoProvider,
     IUserInfoProvider userInfoProvider,
     IWebPageUrlRetriever webPageUrlRetriever,
+    IVisualBuilderDataManager visualBuilderDataManager,
     IOptions<StoryChiefXperienceOptions> optionsAccessor) : IStoryChiefContentPublisher
 {
     public async Task<StoryChiefPublishResult> PublishAsync(
@@ -40,6 +43,11 @@ internal sealed class KenticoStoryChiefContentPublisher(
         }
 
         int webPageItemId = await webPageManager.Create(createParameters, cancellationToken);
+        await AssignPageTemplate(
+            webPageManager,
+            webPageItemId,
+            options,
+            cancellationToken);
         bool publish = ShouldPublish(context);
 
         if (publish && !await webPageManager.TryPublish(webPageItemId, options.LanguageName, cancellationToken))
@@ -70,16 +78,19 @@ internal sealed class KenticoStoryChiefContentPublisher(
             await webPageManager.TryCreateDraft(webPageItemId, options.LanguageName, cancellationToken);
 
             var itemData = new ContentItemData(StoryChiefFieldMapper.Map(story, options.FieldMappings));
+            string? slug = GetOptionalString(story, "seo_slug");
+            var updateData = string.IsNullOrWhiteSpace(slug)
+                ? new UpdateDraftData(itemData)
+                : new UpdateDraftData(itemData, slug);
             if (!await webPageManager.TryUpdateDraft(
                 webPageItemId,
                 options.LanguageName,
-                new UpdateDraftData(itemData),
+                updateData,
                 cancellationToken))
             {
                 throw new InvalidOperationException($"Xperience could not update page {webPageItemId}.");
             }
 
-            string? slug = GetOptionalString(story, "seo_slug");
             if (!string.IsNullOrWhiteSpace(slug))
             {
                 await webPageManager.UpdateTreePathSlug(webPageItemId, slug, cancellationToken);
@@ -158,7 +169,11 @@ internal sealed class KenticoStoryChiefContentPublisher(
 
     private IWebPageManager CreateWebPageManager(StoryChiefPageOptions options)
     {
-        var channel = channelInfoProvider.Get(options.WebsiteChannelName);
+        var channel = channelInfoProvider
+            .Get()
+            .WhereEquals(nameof(ChannelInfo.ChannelName), options.WebsiteChannelName)
+            .TopN(1)
+            .FirstOrDefault();
         var websiteChannel = (channel is null
             ? null
             : websiteChannelInfoProvider
@@ -187,6 +202,38 @@ internal sealed class KenticoStoryChiefContentPublisher(
             cancellationToken);
 
         return string.IsNullOrWhiteSpace(url.AbsoluteUrl) ? null : url.AbsoluteUrl;
+    }
+
+    private async Task AssignPageTemplate(
+        IWebPageManager webPageManager,
+        int webPageItemId,
+        StoryChiefPageOptions options,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(options.PageTemplateIdentifier))
+        {
+            return;
+        }
+
+        var language = contentLanguageInfoProvider
+            .Get()
+            .WhereEquals(nameof(ContentLanguageInfo.ContentLanguageName), options.LanguageName)
+            .TopN(1)
+            .FirstOrDefault() ?? throw CreateConfigurationException(
+                $"The Xperience content language '{options.LanguageName}' does not exist.");
+        var metadata = await webPageManager.GetWebPageMetadata(webPageItemId, cancellationToken);
+        string templateConfiguration = JsonSerializer.Serialize(new
+        {
+            identifier = options.PageTemplateIdentifier,
+            properties = (object?)null,
+            fieldIdentifiers = (object?)null,
+        });
+
+        await visualBuilderDataManager.SetVisualBuilderConfigurationData(
+            metadata.ContentItemID,
+            language.ContentLanguageID,
+            new VisualBuilderData(null!, templateConfiguration),
+            cancellationToken);
     }
 
     private static int GetExternalId(JsonElement story)

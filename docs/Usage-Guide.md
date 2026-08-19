@@ -12,6 +12,7 @@ builder.Services.AddStoryChiefXperience(options =>
 
     options.Page.WebsiteChannelName = "AcmeWebsite";
     options.Page.ContentTypeName = "Acme.ArticlePage";
+    options.Page.PageTemplateIdentifier = "Acme.Article";
     options.Page.LanguageName = "en";
     options.Page.ParentWebPageItemId = 0;
     options.Page.AuditUserName = "Administrator";
@@ -51,6 +52,7 @@ builder.Services.AddStoryChiefXperience(
     "Page": {
       "WebsiteChannelName": "AcmeWebsite",
       "ContentTypeName": "Acme.ArticlePage",
+      "PageTemplateIdentifier": "Acme.Article",
       "LanguageName": "en",
       "AuditUserName": "storychief-integration",
       "FieldMappings": {
@@ -76,6 +78,7 @@ The integration creates website pages using Kentico's `IWebPageManager` API. Con
 
 - `WebsiteChannelName` with the channel code name, not its display name.
 - `ContentTypeName` with the full code name of an existing page content type.
+- `PageTemplateIdentifier` with the identifier of the default page template when the content type is rendered through page templates. Leave it empty for content types rendered by a dedicated controller.
 - `LanguageName` with an enabled Xperience content-language code name.
 - `ParentWebPageItemId` with the target folder or page ID. The default `0` creates pages at the channel root.
 - `AuditUserName` with the Xperience user recorded in audit fields. It defaults to `Administrator`; a dedicated enabled integration user is recommended.

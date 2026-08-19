@@ -31,6 +31,7 @@ builder.Services.AddStoryChiefXperience(options =>
 
     options.Page.WebsiteChannelName = "AcmeWebsite";
     options.Page.ContentTypeName = "Acme.ArticlePage";
+    options.Page.PageTemplateIdentifier = "Acme.Article";
     options.Page.LanguageName = "en";
     options.Page.MapField("title", "ArticleTitle");
     options.Page.MapField("content", "ArticleContent");
@@ -44,7 +45,7 @@ app.MapStoryChiefWebhook();
 
 Store the key outside source control using user secrets, environment variables, or your production secret store.
 
-The target must be an existing page content type whose fields match the configured value types. See the [Usage Guide](./docs/Usage-Guide.md) for parent-page, audit-user, deletion, nested-field, and custom-publisher configuration.
+The target must be an existing page content type whose fields match the configured value types. Page-template content types can set `PageTemplateIdentifier`; controller-rendered types leave it empty. See the [Usage Guide](./docs/Usage-Guide.md) for parent-page, audit-user, deletion, nested-field, and custom-publisher configuration.
 
 For a complete, buildable host project, see the [example Xperience application](./examples/StoryChief.Xperience.Example/README.md).
 

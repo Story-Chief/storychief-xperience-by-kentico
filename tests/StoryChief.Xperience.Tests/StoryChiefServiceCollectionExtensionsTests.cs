@@ -1,3 +1,6 @@
+using CMS.ContentEngine;
+using CMS.DataEngine;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -7,6 +10,16 @@ namespace StoryChief.Xperience.Tests;
 public sealed class StoryChiefServiceCollectionExtensionsTests
 {
     [Test]
+    public void KenticoPublisherUsesRegisteredChannelInfoProvider()
+    {
+        var constructor = typeof(KenticoStoryChiefContentPublisher).GetConstructors().Single();
+
+        Assert.That(
+            constructor.GetParameters().Select(parameter => parameter.ParameterType),
+            Does.Contain(typeof(IInfoProvider<ChannelInfo>)));
+    }
+
+    [Test]
     public void ConfigurationRegistrationBindsPageAndFieldMappings()
     {
         var values = new Dictionary<string, string?>
@@ -15,6 +28,7 @@ public sealed class StoryChiefServiceCollectionExtensionsTests
             ["MaxRequestBodyBytes"] = "2048",
             ["Page:WebsiteChannelName"] = "AcmeWebsite",
             ["Page:ContentTypeName"] = "Acme.ArticlePage",
+            ["Page:PageTemplateIdentifier"] = "Acme.Article",
             ["Page:LanguageName"] = "nl-BE",
             ["Page:AuditUserName"] = "storychief-integration",
             ["Page:FieldMappings:title:XperienceFieldName"] = "ArticleTitle",
@@ -38,6 +52,7 @@ public sealed class StoryChiefServiceCollectionExtensionsTests
             Assert.That(options.MaxRequestBodyBytes, Is.EqualTo(2048));
             Assert.That(options.Page.WebsiteChannelName, Is.EqualTo("AcmeWebsite"));
             Assert.That(options.Page.ContentTypeName, Is.EqualTo("Acme.ArticlePage"));
+            Assert.That(options.Page.PageTemplateIdentifier, Is.EqualTo("Acme.Article"));
             Assert.That(options.Page.LanguageName, Is.EqualTo("nl-BE"));
             Assert.That(options.Page.AuditUserName, Is.EqualTo("storychief-integration"));
             Assert.That(options.Page.FieldMappings["title"],

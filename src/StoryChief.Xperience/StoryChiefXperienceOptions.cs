@@ -42,6 +42,11 @@ public sealed class StoryChiefPageOptions
     public string ContentTypeName { get; set; } = string.Empty;
 
     /// <summary>
+    /// Optional identifier of the default page template assigned to newly created pages.
+    /// </summary>
+    public string? PageTemplateIdentifier { get; set; }
+
+    /// <summary>
     /// The code name of the content language used for created page variants.
     /// </summary>
     public string LanguageName { get; set; } = "en";
