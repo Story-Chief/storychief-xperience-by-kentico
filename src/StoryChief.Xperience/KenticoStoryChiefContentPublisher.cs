@@ -19,6 +19,7 @@ internal sealed class KenticoStoryChiefContentPublisher(
     IUserInfoProvider userInfoProvider,
     IWebPageUrlRetriever webPageUrlRetriever,
     IVisualBuilderDataManager visualBuilderDataManager,
+    StoryChiefCoverImageManager coverImageManager,
     IOptions<StoryChiefXperienceOptions> optionsAccessor) : IStoryChiefContentPublisher
 {
     public async Task<StoryChiefPublishResult> PublishAsync(
@@ -30,43 +31,72 @@ internal sealed class KenticoStoryChiefContentPublisher(
         var webPageManager = CreateWebPageManager(options);
         string languageName = StoryChiefLanguageResolver.Resolve(story, options);
         string displayName = GetDisplayName(story);
-        var itemData = new ContentItemData(StoryChiefFieldMapper.Map(story, options.FieldMappings));
+        var fields = StoryChiefFieldMapper.Map(story, options.FieldMappings);
         string? slug = GetOptionalString(story, "seo_slug");
+        bool publish = ShouldPublish(context);
+        var coverImage = await coverImageManager.PrepareAsync(
+            story,
+            languageName,
+            options,
+            publish,
+            cancellationToken);
+        if (coverImage is not null)
+        {
+            fields[options.CoverImage.PageFieldName] = coverImage.References;
+        }
+
+        var itemData = new ContentItemData(fields);
         int webPageItemId;
 
-        if (TryGetTranslationSourceId(story, out int sourceWebPageItemId))
+        try
         {
-            var variantParameters = new CMS.Websites.CreateLanguageVariantParameters(
-                sourceWebPageItemId,
-                languageName,
-                displayName,
-                itemData);
-            if (!string.IsNullOrWhiteSpace(slug))
+            if (TryGetTranslationSourceId(story, out int sourceWebPageItemId))
             {
-                variantParameters.UrlSlug = slug;
-            }
+                var variantParameters = new CMS.Websites.CreateLanguageVariantParameters(
+                    sourceWebPageItemId,
+                    languageName,
+                    displayName,
+                    itemData);
+                if (!string.IsNullOrWhiteSpace(slug))
+                {
+                    variantParameters.UrlSlug = slug;
+                }
 
-            if (!await webPageManager.TryCreateLanguageVariant(variantParameters, cancellationToken))
+                if (!await webPageManager.TryCreateLanguageVariant(variantParameters, cancellationToken))
+                {
+                    throw new InvalidOperationException(
+                        $"Xperience could not create the '{languageName}' language variant for page {sourceWebPageItemId}.");
+                }
+
+                webPageItemId = sourceWebPageItemId;
+            }
+            else
             {
-                throw new InvalidOperationException(
-                    $"Xperience could not create the '{languageName}' language variant for page {sourceWebPageItemId}.");
-            }
+                var contentItemParameters = new ContentItemParameters(options.ContentTypeName, itemData);
+                var createParameters = new CreateWebPageParameters(displayName, languageName, contentItemParameters)
+                {
+                    ParentWebPageItemID = options.ParentWebPageItemId,
+                };
+                if (!string.IsNullOrWhiteSpace(slug))
+                {
+                    createParameters.UrlSlug = slug;
+                }
 
-            webPageItemId = sourceWebPageItemId;
+                webPageItemId = await webPageManager.Create(createParameters, cancellationToken);
+            }
         }
-        else
+        catch
         {
-            var contentItemParameters = new ContentItemParameters(options.ContentTypeName, itemData);
-            var createParameters = new CreateWebPageParameters(displayName, languageName, contentItemParameters)
+            if (coverImage?.CreatedContentItemId is int createdContentItemId)
             {
-                ParentWebPageItemID = options.ParentWebPageItemId,
-            };
-            if (!string.IsNullOrWhiteSpace(slug))
-            {
-                createParameters.UrlSlug = slug;
+                await coverImageManager.DeleteAsync(
+                    createdContentItemId,
+                    languageName,
+                    options.AuditUserName,
+                    cancellationToken);
             }
 
-            webPageItemId = await webPageManager.Create(createParameters, cancellationToken);
+            throw;
         }
 
         await AssignPageTemplate(
@@ -75,8 +105,6 @@ internal sealed class KenticoStoryChiefContentPublisher(
             languageName,
             options,
             cancellationToken);
-        bool publish = ShouldPublish(context);
-
         if (publish && !await webPageManager.TryPublish(webPageItemId, languageName, cancellationToken))
         {
             throw new InvalidOperationException($"Xperience could not publish page {webPageItemId}.");
@@ -100,12 +128,25 @@ internal sealed class KenticoStoryChiefContentPublisher(
         string languageName = StoryChiefLanguageResolver.Resolve(story, options);
         int webPageItemId = GetExternalId(story);
         bool publish = ShouldPublish(context);
+        StoryChiefCoverImageMutation? coverImage = null;
 
         if (!context.LockUpdates)
         {
             await webPageManager.TryCreateDraft(webPageItemId, languageName, cancellationToken);
 
-            var itemData = new ContentItemData(StoryChiefFieldMapper.Map(story, options.FieldMappings));
+            var fields = StoryChiefFieldMapper.Map(story, options.FieldMappings);
+            coverImage = await coverImageManager.PrepareAsync(
+                story,
+                languageName,
+                options,
+                publish,
+                cancellationToken);
+            if (coverImage is not null)
+            {
+                fields[options.CoverImage.PageFieldName] = coverImage.References;
+            }
+
+            var itemData = new ContentItemData(fields);
             string? slug = GetOptionalString(story, "seo_slug");
             var updateData = string.IsNullOrWhiteSpace(slug)
                 ? new UpdateDraftData(itemData)
@@ -123,15 +164,34 @@ internal sealed class KenticoStoryChiefContentPublisher(
             {
                 await webPageManager.UpdateTreePathSlug(webPageItemId, slug, cancellationToken);
             }
+
         }
         else if (!publish)
         {
             await webPageManager.TryCreateDraft(webPageItemId, languageName, cancellationToken);
         }
 
+        if (context.LockUpdates && publish)
+        {
+            await coverImageManager.PublishExistingAsync(
+                story,
+                languageName,
+                options,
+                cancellationToken);
+        }
+
         if (publish && !await webPageManager.TryPublish(webPageItemId, languageName, cancellationToken))
         {
             throw new InvalidOperationException($"Xperience could not publish page {webPageItemId}.");
+        }
+
+        if (publish && coverImage?.ContentItemIdToDelete is int contentItemIdToDelete)
+        {
+            await coverImageManager.DeleteAsync(
+                contentItemIdToDelete,
+                languageName,
+                options.AuditUserName,
+                cancellationToken);
         }
 
         string? permalink = await GetPermalink(webPageItemId, languageName, !publish, cancellationToken);
@@ -157,6 +217,13 @@ internal sealed class KenticoStoryChiefContentPublisher(
             {
                 Permanently = options.PermanentlyDelete,
             },
+            cancellationToken);
+
+        await coverImageManager.DeleteExistingAsync(
+            story,
+            languageName,
+            options,
+            options.PermanentlyDelete,
             cancellationToken);
 
         return new StoryChiefPublishResult(

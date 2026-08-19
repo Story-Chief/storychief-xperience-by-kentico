@@ -57,6 +57,10 @@ public sealed class StoryChiefWebhookEndpointTests
             options.Page.AuditUserName = "integration-user";
             options.Page.MapLanguage("en", "en-US");
             options.Page.MapField("title", "ArticleTitle");
+            options.Page.CoverImage.ContentTypeName = "Acme.Image";
+            options.Page.CoverImage.AssetFieldName = "ImageFile";
+            options.Page.CoverImage.PageFieldName = "ArticleTeaser";
+            options.Page.CoverImage.WorkspaceName = "Acme.Content";
         });
 
         using var payload = JsonDocument.Parse(response.Body);
@@ -70,6 +74,7 @@ public sealed class StoryChiefWebhookEndpointTests
             Assert.That(metadata.GetProperty("features").EnumerateArray().Select(value => value.GetString()),
                 Is.EquivalentTo(new[] { "publish_as_draft", "lock_updates", "multilingual" }));
             Assert.That(metadata.GetProperty("settings")[0].GetProperty("value").GetBoolean(), Is.True);
+            Assert.That(metadata.GetProperty("settings")[1].GetProperty("value").GetBoolean(), Is.True);
         });
     }
 

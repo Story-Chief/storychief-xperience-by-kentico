@@ -39,6 +39,12 @@ builder.Services.AddStoryChiefXperience(options =>
     options.Page.MapField("content", "ArticleContent");
     options.Page.MapField("excerpt", "ArticleExcerpt");
     options.Page.MapField("published_at", "ArticlePublishedAt", StoryChiefFieldValueKind.DateTime);
+
+    options.Page.CoverImage.ContentTypeName = "Acme.Image";
+    options.Page.CoverImage.AssetFieldName = "ImageFile";
+    options.Page.CoverImage.PageFieldName = "ArticleCoverImage";
+    options.Page.CoverImage.AltTextFieldName = "ImageAltText";
+    options.Page.CoverImage.WorkspaceName = "Acme.Content";
 });
 
 // After app creation and the usual middleware registrations:
@@ -60,11 +66,12 @@ For a complete, buildable host project, see the [example Xperience application](
 - Configurable mapping from StoryChief fields to Xperience field code names
 - Support for publishing as draft and status-only updates
 - Multilingual page variants using StoryChief translation relationships and configurable language mappings
-- An `IStoryChiefContentPublisher` extension point for advanced media, taxonomy, author, or project-specific mapping
+- Cover-image sideloading into reusable Content Hub assets, including alternative text, updates, removal, and cleanup
+- An `IStoryChiefContentPublisher` extension point for advanced taxonomy, author, or project-specific mapping
 - Request-size limit and safe error responses
 - A buildable Xperience host example and endpoint-level webhook tests
 
-Future asset support will target [reusable content item assets in Content hub](https://docs.kentico.com/documentation/business-users/content-hub/content-item-assets). Kentico's sunset media-library APIs will not be used.
+Cover images use [reusable content item assets in Content hub](https://docs.kentico.com/documentation/business-users/content-hub/content-item-assets). Kentico's sunset media-library APIs are not used.
 
 ## Contributing
 

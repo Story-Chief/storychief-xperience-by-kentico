@@ -80,6 +80,11 @@ public sealed class StoryChiefPageOptions
         new Dictionary<string, StoryChiefFieldMapping>(StringComparer.Ordinal);
 
     /// <summary>
+    /// Configures StoryChief cover images as reusable Xperience content item assets.
+    /// </summary>
+    public StoryChiefCoverImageOptions CoverImage { get; } = new();
+
+    /// <summary>
     /// Adds or replaces a StoryChief-to-Xperience language mapping.
     /// </summary>
     public void MapLanguage(string storyChiefLanguage, string xperienceLanguageName)
@@ -103,4 +108,41 @@ public sealed class StoryChiefPageOptions
 
         FieldMappings[storyFieldPath] = new StoryChiefFieldMapping(xperienceFieldName, valueKind);
     }
+}
+
+/// <summary>
+/// Configures storage and page linking for StoryChief cover images.
+/// </summary>
+public sealed class StoryChiefCoverImageOptions
+{
+    /// <summary>
+    /// The full code name of the reusable content type that stores images.
+    /// Leave empty to disable cover-image publishing.
+    /// </summary>
+    public string ContentTypeName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The code name of the content item asset field on <see cref="ContentTypeName"/>.
+    /// </summary>
+    public string AssetFieldName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The code name of the page field that links to the reusable image content item.
+    /// </summary>
+    public string PageFieldName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Optional text field on the reusable image content type that stores alternative text.
+    /// </summary>
+    public string? AltTextFieldName { get; set; }
+
+    /// <summary>
+    /// The Content hub workspace code name used for created cover-image items.
+    /// </summary>
+    public string WorkspaceName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Maximum permitted cover-image download size. Defaults to 10 MiB.
+    /// </summary>
+    public int MaxFileSizeBytes { get; set; } = 10 * 1024 * 1024;
 }
