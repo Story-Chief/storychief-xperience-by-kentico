@@ -46,6 +46,8 @@ Store the key outside source control using user secrets, environment variables, 
 
 The target must be an existing page content type whose fields match the configured value types. See the [Usage Guide](./docs/Usage-Guide.md) for parent-page, audit-user, deletion, nested-field, and custom-publisher configuration.
 
+For a complete, buildable host project, see the [example Xperience application](./examples/StoryChief.Xperience.Example/README.md).
+
 ## Current scope
 
 - `POST /storychief/webhook`
@@ -56,6 +58,7 @@ The target must be an existing page content type whose fields match the configur
 - Support for publishing as draft and status-only updates
 - An `IStoryChiefContentPublisher` extension point for advanced media, taxonomy, author, or project-specific mapping
 - Request-size limit and safe error responses
+- A buildable Xperience host example and endpoint-level webhook tests
 
 ## Contributing
 

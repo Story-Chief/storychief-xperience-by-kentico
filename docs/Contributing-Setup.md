@@ -15,3 +15,5 @@ dotnet test StoryChief.Xperience.slnx --configuration Release --no-build --no-re
 ```
 
 The test suite includes fixtures generated with PHP's default `json_encode` behavior. Keep these tests when changing webhook authentication or response serialization because StoryChief's signing contract depends on byte-compatible JSON.
+
+The solution also builds `examples/StoryChief.Xperience.Example`. The example intentionally does not include an Xperience database or project-specific content type. See its README for the configuration required to run it.

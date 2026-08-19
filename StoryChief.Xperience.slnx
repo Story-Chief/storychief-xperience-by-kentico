@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/examples/">
+    <Project Path="examples/StoryChief.Xperience.Example/StoryChief.Xperience.Example.csproj" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/StoryChief.Xperience/StoryChief.Xperience.csproj" />
   </Folder>
