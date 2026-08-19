@@ -1,0 +1,98 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Publish NuGet package
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: release
+
+    permissions:
+      contents: write
+      id-token: write
+
+    env:
+      ASPNETCORE_ENVIRONMENT: CI
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+      DOTNET_NOLOGO: 1
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Validate release tag
+        id: version
+        shell: bash
+        run: |
+          package_version="${GITHUB_REF_NAME#v}"
+          if [[ ! "$package_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "Tag '$GITHUB_REF_NAME' is not a supported semantic version tag." >&2
+            exit 1
+          fi
+          echo "value=$package_version" >> "$GITHUB_OUTPUT"
+
+      - name: Restore dependencies
+        run: dotnet restore --locked-mode
+
+      - name: Verify formatting
+        run: dotnet format StoryChief.Xperience.slnx --exclude ./examples/** --verify-no-changes --no-restore
+
+      - name: Build solution
+        run: dotnet build --configuration Release --no-restore -p:PackageVersion=${{ steps.version.outputs.value }}
+
+      - name: Test solution
+        run: dotnet test --configuration Release --no-build --no-restore
+
+      - name: Pack NuGet package
+        run: dotnet pack src/StoryChief.Xperience/StoryChief.Xperience.csproj --configuration Release --no-build --no-restore --output artifacts -p:PackageVersion=${{ steps.version.outputs.value }}
+
+      - name: Prepare package installation test
+        run: cp -R tests/StoryChief.Xperience.PackageConsumer /tmp/storychief-package-consumer
+
+      - name: Restore package consumer
+        run: dotnet restore /tmp/storychief-package-consumer --source "${{ github.workspace }}/artifacts" --source https://api.nuget.org/v3/index.json -p:StoryChiefPackageVersion=${{ steps.version.outputs.value }}
+
+      - name: Build package consumer
+        run: dotnet build /tmp/storychief-package-consumer --configuration Release --no-restore -p:StoryChiefPackageVersion=${{ steps.version.outputs.value }}
+
+      - name: NuGet login
+        id: login
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+        with:
+          user: ${{ vars.NUGET_USER }}
+
+      - name: Publish to NuGet.org
+        run: dotnet nuget push "artifacts/StoryChief.Xperience.${{ steps.version.outputs.value }}.nupkg" --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PACKAGE_VERSION: ${{ steps.version.outputs.value }}
+        shell: bash
+        run: |
+          release_flags=()
+          if [[ "$PACKAGE_VERSION" == *-* ]]; then
+            release_flags+=(--prerelease)
+          fi
+          gh release create "$GITHUB_REF_NAME" \
+            "artifacts/StoryChief.Xperience.${PACKAGE_VERSION}.nupkg" \
+            "artifacts/StoryChief.Xperience.${PACKAGE_VERSION}.snupkg" \
+            --verify-tag \
+            --generate-notes \
+            --title "StoryChief.Xperience ${PACKAGE_VERSION}" \
+            "${release_flags[@]}"
