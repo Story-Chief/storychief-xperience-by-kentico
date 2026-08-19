@@ -21,7 +21,7 @@ Do not create or store a long-lived NuGet API key. The workflow exchanges GitHub
 
 ## Prepare a release
 
-1. Update `VersionPrefix` and `VersionSuffix` in `Directory.Build.props`.
+1. Update `VersionPrefix` and add or remove `VersionSuffix` as appropriate in `Directory.Build.props`.
 2. Add the release notes and date to `CHANGELOG.md`.
 3. Update the package version shown in `README.md`.
 4. Open a pull request and confirm formatting, build, tests, packaging, and clean-package installation pass.
@@ -32,8 +32,8 @@ Do not create or store a long-lived NuGet API key. The workflow exchanges GitHub
 Create and push a tag that exactly matches the package version with a `v` prefix:
 
 ```bash
-git tag -a v1.0.0-rc.1 -m "StoryChief.Xperience 1.0.0-rc.1"
-git push origin v1.0.0-rc.1
+git tag -a v1.0.0 -m "StoryChief.Xperience 1.0.0"
+git push origin v1.0.0
 ```
 
 Approve the `release` environment deployment. The workflow validates the tag, rebuilds and tests the solution, verifies installation from the generated package, publishes the package and symbols to NuGet.org, and creates the corresponding GitHub release.
