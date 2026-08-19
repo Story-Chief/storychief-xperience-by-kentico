@@ -183,7 +183,13 @@ internal sealed class KenticoStoryChiefContentPublisher(
                 cancellationToken);
         }
 
-        if (publish && !await webPageManager.TryPublish(webPageItemId, languageName, cancellationToken))
+        if (publish && !await TryPublishOrConfirmPublished(
+            () => webPageManager.TryPublish(webPageItemId, languageName, cancellationToken),
+            async () => (await webPageManager.GetContentItemLanguageMetadata(
+                webPageItemId,
+                languageName,
+                cancellationToken)).LatestVersionStatus,
+            context.LockUpdates))
         {
             throw new InvalidOperationException($"Xperience could not publish page {webPageItemId}.");
         }
@@ -396,6 +402,20 @@ internal sealed class KenticoStoryChiefContentPublisher(
 
     private static bool ShouldPublish(StoryChiefPublishingContext context) =>
         !string.Equals(context.Status, "draft", StringComparison.OrdinalIgnoreCase);
+
+    internal static async Task<bool> TryPublishOrConfirmPublished(
+        Func<Task<bool>> tryPublish,
+        Func<Task<VersionStatus>> getLatestVersionStatus,
+        bool acceptAlreadyPublished)
+    {
+        if (await tryPublish())
+        {
+            return true;
+        }
+
+        return acceptAlreadyPublished
+            && await getLatestVersionStatus() == VersionStatus.Published;
+    }
 
     private static StoryChiefPublisherNotConfiguredException CreateConfigurationException(string message) => new(message);
 }

@@ -1,8 +1,8 @@
-# [StoryChief](https://www.storychief.io/) for Xperience by Kentico
+# StoryChief for Xperience by Kentico
 
 [![CI: Build and Test](https://github.com/Story-Chief/storychief-xperience-by-kentico/actions/workflows/ci.yml/badge.svg)](https://github.com/Story-Chief/storychief-xperience-by-kentico/actions/workflows/ci.yml)
 
-An open-source Xperience by Kentico integration for receiving authenticated publishing webhooks from StoryChief.
+An open-source Xperience by Kentico integration for receiving authenticated publishing webhooks from [StoryChief](https://www.storychief.io/).
 
 > [!NOTE]
 > The `1.0.0-rc.1` release is the first public release candidate. Validate it in a non-production Xperience environment before rolling it out broadly.
