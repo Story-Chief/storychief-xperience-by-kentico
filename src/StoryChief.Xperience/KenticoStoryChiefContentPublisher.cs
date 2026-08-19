@@ -20,6 +20,7 @@ internal sealed class KenticoStoryChiefContentPublisher(
     IWebPageUrlRetriever webPageUrlRetriever,
     IVisualBuilderDataManager visualBuilderDataManager,
     StoryChiefCoverImageManager coverImageManager,
+    StoryChiefTaxonomyManager taxonomyManager,
     IOptions<StoryChiefXperienceOptions> optionsAccessor) : IStoryChiefContentPublisher
 {
     public async Task<StoryChiefPublishResult> PublishAsync(
@@ -32,6 +33,7 @@ internal sealed class KenticoStoryChiefContentPublisher(
         string languageName = StoryChiefLanguageResolver.Resolve(story, options);
         string displayName = GetDisplayName(story);
         var fields = StoryChiefFieldMapper.Map(story, options.FieldMappings);
+        await taxonomyManager.ApplyAsync(story, languageName, options, fields, cancellationToken);
         string? slug = GetOptionalString(story, "seo_slug");
         bool publish = ShouldPublish(context);
         var coverImage = await coverImageManager.PrepareAsync(
@@ -135,6 +137,7 @@ internal sealed class KenticoStoryChiefContentPublisher(
             await webPageManager.TryCreateDraft(webPageItemId, languageName, cancellationToken);
 
             var fields = StoryChiefFieldMapper.Map(story, options.FieldMappings);
+            await taxonomyManager.ApplyAsync(story, languageName, options, fields, cancellationToken);
             coverImage = await coverImageManager.PrepareAsync(
                 story,
                 languageName,

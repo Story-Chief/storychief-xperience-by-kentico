@@ -85,6 +85,12 @@ public sealed class StoryChiefPageOptions
     public StoryChiefCoverImageOptions CoverImage { get; } = new();
 
     /// <summary>
+    /// Maps StoryChief taxonomy payloads to Xperience taxonomy fields.
+    /// </summary>
+    public IDictionary<string, StoryChiefTaxonomyMapping> TaxonomyMappings { get; } =
+        new Dictionary<string, StoryChiefTaxonomyMapping>(StringComparer.Ordinal);
+
+    /// <summary>
     /// Adds or replaces a StoryChief-to-Xperience language mapping.
     /// </summary>
     public void MapLanguage(string storyChiefLanguage, string xperienceLanguageName)
@@ -107,6 +113,67 @@ public sealed class StoryChiefPageOptions
         ArgumentException.ThrowIfNullOrWhiteSpace(xperienceFieldName);
 
         FieldMappings[storyFieldPath] = new StoryChiefFieldMapping(xperienceFieldName, valueKind);
+    }
+
+    /// <summary>
+    /// Adds or replaces a StoryChief-to-Xperience taxonomy mapping.
+    /// </summary>
+    public StoryChiefTaxonomyMapping MapTaxonomy(
+        string storyFieldPath,
+        string xperienceFieldName,
+        string taxonomyName)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(storyFieldPath);
+        ArgumentException.ThrowIfNullOrWhiteSpace(xperienceFieldName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(taxonomyName);
+
+        var mapping = new StoryChiefTaxonomyMapping
+        {
+            XperienceFieldName = xperienceFieldName,
+            TaxonomyName = taxonomyName,
+        };
+        TaxonomyMappings[storyFieldPath] = mapping;
+
+        return mapping;
+    }
+}
+
+/// <summary>
+/// Maps a StoryChief taxonomy payload to an Xperience taxonomy field.
+/// </summary>
+public sealed class StoryChiefTaxonomyMapping
+{
+    /// <summary>
+    /// The code name of the Xperience taxonomy field on the target page type.
+    /// </summary>
+    public string XperienceFieldName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The code name of the existing Xperience taxonomy used by the field.
+    /// </summary>
+    public string TaxonomyName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Whether StoryChief terms without an existing match are created in the configured taxonomy.
+    /// Defaults to <see langword="true"/>.
+    /// </summary>
+    public bool CreateMissingTags { get; set; } = true;
+
+    /// <summary>
+    /// Maps a StoryChief term ID, slug, or name to an existing Xperience tag code name.
+    /// </summary>
+    public IDictionary<string, string> TagMappings { get; } =
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Adds or replaces an explicit StoryChief-to-Xperience tag mapping.
+    /// </summary>
+    public void MapTag(string storyChiefIdentifier, string xperienceTagName)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(storyChiefIdentifier);
+        ArgumentException.ThrowIfNullOrWhiteSpace(xperienceTagName);
+
+        TagMappings[storyChiefIdentifier] = xperienceTagName;
     }
 }
 

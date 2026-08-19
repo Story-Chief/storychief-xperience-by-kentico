@@ -39,6 +39,10 @@ public sealed class StoryChiefServiceCollectionExtensionsTests
             ["Page:CoverImage:AltTextFieldName"] = "ImageAltText",
             ["Page:CoverImage:WorkspaceName"] = "Content",
             ["Page:CoverImage:MaxFileSizeBytes"] = "4096",
+            ["Page:TaxonomyMappings:tags:XperienceFieldName"] = "ArticleTags",
+            ["Page:TaxonomyMappings:tags:TaxonomyName"] = "ArticleTaxonomy",
+            ["Page:TaxonomyMappings:tags:CreateMissingTags"] = "false",
+            ["Page:TaxonomyMappings:tags:TagMappings:2769118967"] = "GoGreen",
             ["Page:FieldMappings:title:XperienceFieldName"] = "ArticleTitle",
             ["Page:FieldMappings:title:ValueKind"] = "String",
             ["Page:FieldMappings:published_at:XperienceFieldName"] = "ArticlePublishedAt",
@@ -71,6 +75,10 @@ public sealed class StoryChiefServiceCollectionExtensionsTests
             Assert.That(options.Page.CoverImage.AltTextFieldName, Is.EqualTo("ImageAltText"));
             Assert.That(options.Page.CoverImage.WorkspaceName, Is.EqualTo("Content"));
             Assert.That(options.Page.CoverImage.MaxFileSizeBytes, Is.EqualTo(4096));
+            Assert.That(options.Page.TaxonomyMappings["tags"].XperienceFieldName, Is.EqualTo("ArticleTags"));
+            Assert.That(options.Page.TaxonomyMappings["tags"].TaxonomyName, Is.EqualTo("ArticleTaxonomy"));
+            Assert.That(options.Page.TaxonomyMappings["tags"].CreateMissingTags, Is.False);
+            Assert.That(options.Page.TaxonomyMappings["tags"].TagMappings["2769118967"], Is.EqualTo("GoGreen"));
             Assert.That(options.Page.FieldMappings["title"],
                 Is.EqualTo(new StoryChiefFieldMapping("ArticleTitle", StoryChiefFieldValueKind.String)));
             Assert.That(options.Page.FieldMappings["published_at"],

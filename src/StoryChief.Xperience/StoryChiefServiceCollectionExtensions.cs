@@ -52,6 +52,7 @@ public static class StoryChiefServiceCollectionExtensions
                 AllowAutoRedirect = false,
             });
         services.TryAddScoped<StoryChief.Xperience.StoryChiefCoverImageManager>();
+        services.TryAddScoped<StoryChief.Xperience.StoryChiefTaxonomyManager>();
         services.TryAddScoped<StoryChief.Xperience.IStoryChiefContentPublisher,
             StoryChief.Xperience.KenticoStoryChiefContentPublisher>();
 

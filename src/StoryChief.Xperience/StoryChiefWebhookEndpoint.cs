@@ -146,6 +146,13 @@ internal static class StoryChiefWebhookEndpoint
                         ["description"] = "A workspace, reusable image type, asset field, and page reference field are configured.",
                         ["value"] = StoryChiefCoverImageManager.IsEnabled(options.Page.CoverImage),
                     },
+                    new Dictionary<string, object?>
+                    {
+                        ["key"] = "taxonomy_mapping_configured",
+                        ["title"] = "Xperience taxonomy mapping configured",
+                        ["description"] = "Every StoryChief taxonomy mapping has a taxonomy and page field configured.",
+                        ["value"] = StoryChiefTaxonomyManager.IsConfigured(options.Page.TaxonomyMappings),
+                    },
                 },
             },
         };
@@ -164,6 +171,11 @@ internal static class StoryChiefWebhookEndpoint
         if (options.Page.LanguageMappings.Count > 0)
         {
             features.Add("multilingual");
+        }
+
+        if (options.Page.TaxonomyMappings.Count > 0)
+        {
+            features.Add("taxonomy");
         }
 
         return features;
