@@ -129,7 +129,7 @@ internal static class StoryChiefWebhookEndpoint
                     new Dictionary<string, object?> { ["type"] = "cms_type", ["value"] = "xperience-by-kentico" },
                     new Dictionary<string, object?> { ["type"] = "cms_version", ["value"] = cmsVersion?.ToString(3) ?? "unknown" },
                 },
-                ["features"] = new[] { "publish_as_draft", "lock_updates" },
+                ["features"] = GetFeatures(options),
                 ["settings"] = new object[]
                 {
                     new Dictionary<string, object?>
@@ -150,6 +150,17 @@ internal static class StoryChiefWebhookEndpoint
         && !string.IsNullOrWhiteSpace(options.LanguageName)
         && !string.IsNullOrWhiteSpace(options.AuditUserName)
         && options.FieldMappings.Count > 0;
+
+    private static IReadOnlyList<string> GetFeatures(StoryChiefXperienceOptions options)
+    {
+        var features = new List<string> { "publish_as_draft", "lock_updates" };
+        if (options.Page.LanguageMappings.Count > 0)
+        {
+            features.Add("multilingual");
+        }
+
+        return features;
+    }
 
     private static string? GetOptionalString(JsonElement parent, string propertyName) =>
         parent.TryGetProperty(propertyName, out var property) && property.ValueKind == JsonValueKind.String

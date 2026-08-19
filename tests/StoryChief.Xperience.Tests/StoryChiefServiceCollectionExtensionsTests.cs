@@ -30,6 +30,8 @@ public sealed class StoryChiefServiceCollectionExtensionsTests
             ["Page:ContentTypeName"] = "Acme.ArticlePage",
             ["Page:PageTemplateIdentifier"] = "Acme.Article",
             ["Page:LanguageName"] = "nl-BE",
+            ["Page:LanguageMappings:en"] = "en-US",
+            ["Page:LanguageMappings:nl"] = "nl-BE",
             ["Page:AuditUserName"] = "storychief-integration",
             ["Page:FieldMappings:title:XperienceFieldName"] = "ArticleTitle",
             ["Page:FieldMappings:title:ValueKind"] = "String",
@@ -54,6 +56,8 @@ public sealed class StoryChiefServiceCollectionExtensionsTests
             Assert.That(options.Page.ContentTypeName, Is.EqualTo("Acme.ArticlePage"));
             Assert.That(options.Page.PageTemplateIdentifier, Is.EqualTo("Acme.Article"));
             Assert.That(options.Page.LanguageName, Is.EqualTo("nl-BE"));
+            Assert.That(options.Page.LanguageMappings,
+                Is.EquivalentTo(new Dictionary<string, string> { ["en"] = "en-US", ["nl"] = "nl-BE" }));
             Assert.That(options.Page.AuditUserName, Is.EqualTo("storychief-integration"));
             Assert.That(options.Page.FieldMappings["title"],
                 Is.EqualTo(new StoryChiefFieldMapping("ArticleTitle", StoryChiefFieldValueKind.String)));

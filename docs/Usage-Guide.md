@@ -14,6 +14,8 @@ builder.Services.AddStoryChiefXperience(options =>
     options.Page.ContentTypeName = "Acme.ArticlePage";
     options.Page.PageTemplateIdentifier = "Acme.Article";
     options.Page.LanguageName = "en";
+    options.Page.MapLanguage("en", "en");
+    options.Page.MapLanguage("nl", "nl-BE");
     options.Page.ParentWebPageItemId = 0;
     options.Page.AuditUserName = "Administrator";
 
@@ -54,6 +56,10 @@ builder.Services.AddStoryChiefXperience(
       "ContentTypeName": "Acme.ArticlePage",
       "PageTemplateIdentifier": "Acme.Article",
       "LanguageName": "en",
+      "LanguageMappings": {
+        "en": "en",
+        "nl": "nl-BE"
+      },
       "AuditUserName": "storychief-integration",
       "FieldMappings": {
         "title": {
@@ -80,11 +86,20 @@ The integration creates website pages using Kentico's `IWebPageManager` API. Con
 - `ContentTypeName` with the full code name of an existing page content type.
 - `PageTemplateIdentifier` with the identifier of the default page template when the content type is rendered through page templates. Leave it empty for content types rendered by a dedicated controller.
 - `LanguageName` with an enabled Xperience content-language code name.
+- `LanguageMappings` to opt into multilingual publishing by mapping every expected StoryChief language code to an enabled Xperience content-language code name.
 - `ParentWebPageItemId` with the target folder or page ID. The default `0` creates pages at the channel root.
 - `AuditUserName` with the Xperience user recorded in audit fields. It defaults to `Administrator`; a dedicated enabled integration user is recommended.
 - `PermanentlyDelete` to control whether delete events bypass the recycle bin. It defaults to `false`.
 
 The StoryChief `seo_slug` is automatically used as the page URL slug. The created Xperience page ID is returned to StoryChief as `external_id`, which is then used for updates and deletes.
+
+## Publish translations
+
+When `LanguageMappings` is empty, every story continues to use `LanguageName`. Once at least one mapping is configured, every incoming StoryChief language must have an explicit mapping; unmapped languages are rejected instead of being written into the wrong variant.
+
+Publish the StoryChief source story before its translations. Translation webhooks include the source destination's `external_id`, which the integration uses to create an Xperience language variant on the same page. All variants therefore share one Xperience page ID while keeping their own content, workflow state, and public URL path.
+
+On translation updates, `seo_slug` updates only that language variant's public URL. The shared content-tree path remains owned by the source story.
 
 ## Map StoryChief fields
 
@@ -115,6 +130,8 @@ The destination Xperience fields must accept the resulting .NET values. Field va
 ## Advanced project-specific mapping
 
 Direct mapping intentionally does not create Xperience assets, taxonomy tags, author content items, or other linked content. Projects that need those features can replace the default publisher with an `IStoryChiefContentPublisher` implementation:
+
+For future asset mapping, use [reusable content item assets in Content hub](https://docs.kentico.com/documentation/business-users/content-hub/content-item-assets). Do not build new integrations on Kentico's [obsolete media-library APIs](https://docs.kentico.com/documentation/business-users/media-libraries).
 
 ```csharp
 public sealed class ArticlePublisher : IStoryChiefContentPublisher

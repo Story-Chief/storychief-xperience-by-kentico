@@ -33,6 +33,8 @@ builder.Services.AddStoryChiefXperience(options =>
     options.Page.ContentTypeName = "Acme.ArticlePage";
     options.Page.PageTemplateIdentifier = "Acme.Article";
     options.Page.LanguageName = "en";
+    options.Page.MapLanguage("en", "en");
+    options.Page.MapLanguage("nl", "nl-BE");
     options.Page.MapField("title", "ArticleTitle");
     options.Page.MapField("content", "ArticleContent");
     options.Page.MapField("excerpt", "ArticleExcerpt");
@@ -57,9 +59,12 @@ For a complete, buildable host project, see the [example Xperience application](
 - Website page creation, draft updates, publishing, URL resolution, and deletion through Kentico's public APIs
 - Configurable mapping from StoryChief fields to Xperience field code names
 - Support for publishing as draft and status-only updates
+- Multilingual page variants using StoryChief translation relationships and configurable language mappings
 - An `IStoryChiefContentPublisher` extension point for advanced media, taxonomy, author, or project-specific mapping
 - Request-size limit and safe error responses
 - A buildable Xperience host example and endpoint-level webhook tests
+
+Future asset support will target [reusable content item assets in Content hub](https://docs.kentico.com/documentation/business-users/content-hub/content-item-assets). Kentico's sunset media-library APIs will not be used.
 
 ## Contributing
 

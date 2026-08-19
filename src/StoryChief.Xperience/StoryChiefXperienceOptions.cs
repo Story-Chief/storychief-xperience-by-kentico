@@ -52,6 +52,13 @@ public sealed class StoryChiefPageOptions
     public string LanguageName { get; set; } = "en";
 
     /// <summary>
+    /// Maps StoryChief language codes to Xperience content-language code names.
+    /// When empty, all stories use <see cref="LanguageName"/>.
+    /// </summary>
+    public IDictionary<string, string> LanguageMappings { get; } =
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
     /// The parent page identifier. A value of zero creates pages at the channel root.
     /// </summary>
     public int ParentWebPageItemId { get; set; }
@@ -71,6 +78,17 @@ public sealed class StoryChiefPageOptions
     /// </summary>
     public IDictionary<string, StoryChiefFieldMapping> FieldMappings { get; } =
         new Dictionary<string, StoryChiefFieldMapping>(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Adds or replaces a StoryChief-to-Xperience language mapping.
+    /// </summary>
+    public void MapLanguage(string storyChiefLanguage, string xperienceLanguageName)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(storyChiefLanguage);
+        ArgumentException.ThrowIfNullOrWhiteSpace(xperienceLanguageName);
+
+        LanguageMappings[storyChiefLanguage] = xperienceLanguageName;
+    }
 
     /// <summary>
     /// Adds or replaces a StoryChief-to-Xperience field mapping.

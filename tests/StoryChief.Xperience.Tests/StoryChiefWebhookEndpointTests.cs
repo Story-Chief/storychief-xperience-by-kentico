@@ -55,6 +55,7 @@ public sealed class StoryChiefWebhookEndpointTests
             options.Page.ContentTypeName = "Acme.ArticlePage";
             options.Page.LanguageName = "en";
             options.Page.AuditUserName = "integration-user";
+            options.Page.MapLanguage("en", "en-US");
             options.Page.MapField("title", "ArticleTitle");
         });
 
@@ -67,7 +68,7 @@ public sealed class StoryChiefWebhookEndpointTests
             Assert.That(HasValidResponseSignature(response.Body), Is.True);
             Assert.That(publisher.TotalCalls, Is.Zero);
             Assert.That(metadata.GetProperty("features").EnumerateArray().Select(value => value.GetString()),
-                Is.EquivalentTo(new[] { "publish_as_draft", "lock_updates" }));
+                Is.EquivalentTo(new[] { "publish_as_draft", "lock_updates", "multilingual" }));
             Assert.That(metadata.GetProperty("settings")[0].GetProperty("value").GetBoolean(), Is.True);
         });
     }
