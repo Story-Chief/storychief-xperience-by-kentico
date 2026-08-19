@@ -4,10 +4,37 @@ updates:
     directory: /
     schedule:
       interval: weekly
-    open-pull-requests-limit: 5
+      day: monday
+      time: "06:00"
+      timezone: Europe/Brussels
+    open-pull-requests-limit: 1
+    commit-message:
+      prefix: chore(deps)
+    groups:
+      kentico-xperience:
+        patterns:
+          - Kentico.Xperience.*
+          - kentico.xperience.*
+      test-tooling:
+        patterns:
+          - Microsoft.NET.Test.Sdk
+          - NUnit
+          - NUnit.Analyzers
+          - NUnit3TestAdapter
+          - coverlet.collector
+          - SonarAnalyzer.CSharp
 
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
-    open-pull-requests-limit: 5
+      day: monday
+      time: "06:00"
+      timezone: Europe/Brussels
+    open-pull-requests-limit: 1
+    commit-message:
+      prefix: chore(deps)
+    groups:
+      github-actions:
+        patterns:
+          - "*"
