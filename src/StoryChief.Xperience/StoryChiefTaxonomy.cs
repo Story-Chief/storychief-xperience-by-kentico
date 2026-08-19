@@ -208,14 +208,15 @@ internal sealed class StoryChiefTaxonomyManager(
         }
 
         string managedTagName = GetManagedTagName(path, mapping.TaxonomyName, term.Identifier);
-        if (mapping.CreateMissingTags)
+        var managedTagIdentifier = await TryUpdateManagedTag(
+            managedTagName,
+            term.Name,
+            taxonomy.TaxonomyID,
+            languageName,
+            cancellationToken);
+        if (managedTagIdentifier.HasValue)
         {
-            var managedTag = FindTagInfo(managedTagName, taxonomy.TaxonomyID);
-            if (managedTag is not null)
-            {
-                await UpdateManagedTagTitle(managedTag, term.Name, languageName, cancellationToken);
-                return managedTag.TagGUID;
-            }
+            return managedTagIdentifier.Value;
         }
 
         var matchingTags = availableTags.Where(tag =>
@@ -248,6 +249,31 @@ internal sealed class StoryChiefTaxonomyManager(
             taxonomy,
             languageName,
             cancellationToken);
+    }
+
+    private async Task<Guid?> TryUpdateManagedTag(
+        string tagName,
+        string title,
+        int taxonomyId,
+        string languageName,
+        CancellationToken cancellationToken)
+    {
+        await tagMutationLock.WaitAsync(cancellationToken);
+        try
+        {
+            var tag = FindTagInfo(tagName, taxonomyId);
+            if (tag is null)
+            {
+                return null;
+            }
+
+            await UpdateManagedTagTitle(tag, title, languageName, cancellationToken);
+            return tag.TagGUID;
+        }
+        finally
+        {
+            tagMutationLock.Release();
+        }
     }
 
     private async Task<Guid> CreateManagedTag(

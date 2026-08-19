@@ -186,7 +186,7 @@ tags.MapTag("sustainability", "SustainableContent");
 
 Automatically created tags use deterministic code names, so subsequent updates and translated variants reuse them. Their titles are updated in the current Xperience language. The integration never creates or deletes taxonomy groups, never deletes tags when an article is removed, and never renames explicitly mapped or otherwise user-managed tags.
 
-Set `CreateMissingTags` to `false` to require every incoming term to match an existing or explicitly mapped tag. Missing and ambiguous matches are reported as configuration errors instead of being silently ignored.
+Set `CreateMissingTags` to `false` to require every incoming term to match an existing, previously integration-managed, or explicitly mapped tag. The setting prevents new tag creation; it does not disable stable reuse of tags the integration created earlier. Missing and ambiguous matches are reported as configuration errors instead of being silently ignored.
 
 Do not also map the same StoryChief property and Xperience destination field through `MapField`; taxonomy mappings write Xperience `IEnumerable<TagReference>` values rather than JSON text.
 
