@@ -6,29 +6,37 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   dotnet-format:
     name: .Net Format Check
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
         with:
-          global-json-file: global.json
+          dotnet-version: |
+            8.0.x
+            10.0.x
 
       - name: Run dotnet format
-        run: dotnet format Kentico.Xperience.RepoTemplate.slnx --exclude ./examples/** --verify-no-changes
+        run: dotnet format StoryChief.Xperience.slnx --exclude ./examples/** --verify-no-changes
 
   build_and_test:
     name: Build and Test
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     needs: dotnet-format
-    defaults:
-      run:
-        shell: pwsh
 
     env:
       ASPNETCORE_ENVIRONMENT: CI
@@ -37,27 +45,20 @@ jobs:
       DOTNET_NOLOGO: 1
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
         with:
-          global-json-file: global.json
+          dotnet-version: |
+            8.0.x
+            10.0.x
 
       - name: Install dependencies
-        run: |
-          dotnet restore `
-            --locked-mode
+        run: dotnet restore --locked-mode
 
       - name: Build Solution
-        run: |
-          dotnet build `
-            --configuration Release `
-            --no-restore
+        run: dotnet build --configuration Release --no-restore
 
       - name: Test Solution
-        run: |
-          dotnet test `
-            --configuration Release `
-            --no-build `
-            --no-restore
+        run: dotnet test --configuration Release --no-build --no-restore

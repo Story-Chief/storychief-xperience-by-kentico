@@ -5,13 +5,13 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": ".NET Core Launch (web)",
+      "name": "Launch example Xperience host",
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "dotnet: build",
-      "program": "bin/Debug/net10.0/DancingGoat.dll",
+      "program": "${workspaceFolder}/examples/StoryChief.Xperience.Example/bin/Debug/net8.0/StoryChief.Xperience.Example.dll",
       "args": [],
-      "cwd": "${workspaceFolder}/examples/DancingGoat",
+      "cwd": "${workspaceFolder}/examples/StoryChief.Xperience.Example",
       "stopAtEntry": false,
       "serverReadyAction": {
         "action": "openExternally",
@@ -20,9 +20,7 @@
       "env": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "sourceFileMap": {
-        "/Views": "${workspaceFolder}/examples/DancingGoat/Views"
-      }
+      "sourceFileMap": {}
     },
     {
       "name": ".NET Core Attach",

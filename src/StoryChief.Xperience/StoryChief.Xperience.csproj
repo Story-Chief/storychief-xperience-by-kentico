@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Product>StoryChief for Xperience by Kentico</Product>
+    <Title>$(Product)</Title>
+    <Description>Publish StoryChief content to Xperience by Kentico.</Description>
+    <PackageId>StoryChief.Xperience</PackageId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="CMS.AssemblyDiscoverableAttribute" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Kentico.Xperience.Core" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="StoryChief.Xperience.Tests" />
+  </ItemGroup>
+
+</Project>
