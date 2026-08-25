@@ -17,3 +17,17 @@ dotnet test StoryChief.Xperience.slnx --configuration Release --no-build --no-re
 The test suite includes fixtures generated with PHP's default `json_encode` behavior. Keep these tests when changing webhook authentication or response serialization because StoryChief's signing contract depends on byte-compatible JSON.
 
 The solution also builds `examples/StoryChief.Xperience.Example`. The example intentionally does not include an Xperience database or project-specific content type. See its README for the configuration required to run it.
+
+## Xperience compatibility
+
+`KenticoXperienceVersion` in `Directory.Packages.props` is the oldest Xperience version supported by the NuGet package. Do not raise this baseline merely because a newer Xperience refresh is available, since doing so also raises the package's minimum dependency requirement.
+
+CI validates the locked baseline and runs a separate compatibility build against the latest supported refresh. To reproduce the latest-version check, override the property consistently during restore, build, and test:
+
+```bash
+dotnet restore --force-evaluate -p:KenticoXperienceVersion=31.8.0
+dotnet build StoryChief.Xperience.slnx --configuration Release --no-restore -p:KenticoXperienceVersion=31.8.0
+dotnet test StoryChief.Xperience.slnx --configuration Release --no-build --no-restore -p:KenticoXperienceVersion=31.8.0
+```
+
+The forced restore updates lock files in the working tree. Do not commit those compatibility-only lock-file changes unless the minimum supported Xperience version is intentionally being raised.
