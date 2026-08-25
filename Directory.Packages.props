@@ -4,13 +4,15 @@
     <CentralPackageVersionOverrideEnabled>false</CentralPackageVersionOverrideEnabled>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
+    <!-- Keep this at the oldest Xperience version supported by the package. -->
+    <KenticoXperienceVersion Condition="'$(KenticoXperienceVersion)' == ''">31.7.4</KenticoXperienceVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="Kentico.Xperience.Admin" Version="31.7.4" />
-    <PackageVersion Include="Kentico.Xperience.Core" Version="31.7.4" />
-    <PackageVersion Include="Kentico.Xperience.WebApp" Version="31.7.4" />
-    <PackageVersion Include="kentico.xperience.azurestorage" Version="31.7.4" />
-    <PackageVersion Include="kentico.xperience.imageprocessing" Version="31.7.4" />
+    <PackageVersion Include="Kentico.Xperience.Admin" Version="$(KenticoXperienceVersion)" />
+    <PackageVersion Include="Kentico.Xperience.Core" Version="$(KenticoXperienceVersion)" />
+    <PackageVersion Include="Kentico.Xperience.WebApp" Version="$(KenticoXperienceVersion)" />
+    <PackageVersion Include="kentico.xperience.azurestorage" Version="$(KenticoXperienceVersion)" />
+    <PackageVersion Include="kentico.xperience.imageprocessing" Version="$(KenticoXperienceVersion)" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.9.0" />
     <PackageVersion Include="NUnit" Version="4.6.1" />
     <PackageVersion Include="NUnit.Analyzers" Version="4.14.0" />
