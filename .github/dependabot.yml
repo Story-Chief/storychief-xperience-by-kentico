@@ -10,11 +10,12 @@ updates:
     open-pull-requests-limit: 1
     commit-message:
       prefix: chore(deps)
+    ignore:
+      # Keep the package's minimum supported Xperience version stable. Newer
+      # releases are validated separately by the compatibility CI job.
+      - dependency-name: Kentico.Xperience.*
+      - dependency-name: kentico.xperience.*
     groups:
-      kentico-xperience:
-        patterns:
-          - Kentico.Xperience.*
-          - kentico.xperience.*
       test-tooling:
         patterns:
           - Microsoft.NET.Test.Sdk
