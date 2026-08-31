@@ -22,12 +22,14 @@ The solution also builds `examples/StoryChief.Xperience.Example`. The example in
 
 `KenticoXperienceVersion` in `Directory.Packages.props` is the oldest Xperience version supported by the NuGet package. Do not raise this baseline merely because a newer Xperience refresh is available, since doing so also raises the package's minimum dependency requirement.
 
+Kentico packages are intentionally excluded from Dependabot version updates. When validating a newer Xperience release, update the dedicated compatibility job and the commands below without changing the minimum-version property.
+
 CI validates the locked baseline and runs a separate compatibility build against the latest supported refresh. To reproduce the latest-version check, override the property consistently during restore, build, and test:
 
 ```bash
-dotnet restore --force-evaluate -p:KenticoXperienceVersion=31.8.0
-dotnet build StoryChief.Xperience.slnx --configuration Release --no-restore -p:KenticoXperienceVersion=31.8.0
-dotnet test StoryChief.Xperience.slnx --configuration Release --no-build --no-restore -p:KenticoXperienceVersion=31.8.0
+dotnet restore --force-evaluate -p:KenticoXperienceVersion=31.8.2
+dotnet build StoryChief.Xperience.slnx --configuration Release --no-restore -p:KenticoXperienceVersion=31.8.2
+dotnet test StoryChief.Xperience.slnx --configuration Release --no-build --no-restore -p:KenticoXperienceVersion=31.8.2
 ```
 
 The forced restore updates lock files in the working tree. Do not commit those compatibility-only lock-file changes unless the minimum supported Xperience version is intentionally being raised.
